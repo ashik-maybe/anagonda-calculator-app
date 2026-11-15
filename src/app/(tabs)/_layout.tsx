@@ -44,6 +44,8 @@ export default function TabsLayout() {
         name="more"
         options={{
           title: t("tab_more"),
+          // The more tab hosts a nested Stack with its own headers.
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <MoreHorizontal color={color} size={size} />,
         }}
       />

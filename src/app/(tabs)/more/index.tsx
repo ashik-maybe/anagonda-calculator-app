@@ -1,0 +1,60 @@
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { ChevronRight, History } from "lucide-react-native";
+import { useThemeColors, spacing, typography, radius } from "../../../constants/theme";
+import { t } from "../../../lib/i18n";
+import { hapticTick } from "../../../lib/haptics";
+
+/** Only destinations that exist are listed — no dead buttons. */
+export default function MoreMenuScreen() {
+  const { colors } = useThemeColors();
+  const router = useRouter();
+
+  const items = [
+    { key: "history", label: t("history"), icon: History, route: "/more/history" as const },
+  ];
+
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing[3] }}
+    >
+      <View style={{ borderRadius: radius.md, overflow: "hidden" }}>
+        {items.map(({ key, label, icon: Icon, route }) => (
+          <Pressable
+            key={key}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            onPress={() => {
+              hapticTick();
+              router.push(route);
+            }}
+            style={({ pressed }) => ({
+              minHeight: 56,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing[3],
+              paddingHorizontal: spacing[3],
+              paddingVertical: spacing[2],
+              backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
+            })}
+          >
+            <Icon color={colors.primary} size={20} />
+            <Text
+              style={{
+                flex: 1,
+                color: colors.onSurface,
+                fontSize: 15,
+                fontWeight: "600",
+                fontFamily: typography.fonts.bengali,
+              }}
+            >
+              {label}
+            </Text>
+            <ChevronRight color={colors.onSurfaceVariant} size={20} />
+          </Pressable>
+        ))}
+      </View>
+    </ScrollView>
+  );
+}

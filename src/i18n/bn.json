@@ -65,5 +65,13 @@
   "unit_as_of": "২০২৫-০৫-০১ পর্যন্ত",
   "deed_document_governs": "দলিলে যা লেখা আছে তাই প্রকৃত মান",
   "rate_default": "ডিফল্ট হার",
-  "rate_custom": "কাস্টম হার"
+  "rate_custom": "কাস্টম হার",
+  "deed_template": "মোট {total} শতাংশের {chain} = {area} শতাংশ ({ratio} অংশ)",
+  "history_empty": "এখনো কোনো ইতিহাস নেই",
+  "history_clear": "সব মুছুন",
+  "history_clear_confirm": "নিশ্চিত করতে আবার চাপুন",
+  "history_delete": "মুছুন",
+  "history_saved": "ইতিহাস সংরক্ষিত",
+  "ratio_share": "অংশ",
+  "empty_hisab_hint": "মোট শতাংশ এবং আনা-গন্ডা ভাগ দিন"
 }

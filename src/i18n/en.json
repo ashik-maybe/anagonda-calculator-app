@@ -7,7 +7,7 @@
   "home_last_result": "Last result",
   "home_empty": "No calculations yet",
   "home_cta": "Start your first calculation",
-  "quick_hishab": "Share",
+  "quick_hishab": "Hisab",
   "quick_reverse": "Reverse",
   "quick_measure": "Measure",
   "hishab_title": "Calculate",
@@ -65,5 +65,13 @@
   "unit_as_of": "As of 1 May 2025",
   "deed_document_governs": "The value written in the deed governs",
   "rate_default": "Default rate",
-  "rate_custom": "Custom rate"
+  "rate_custom": "Custom rate",
+  "deed_template": "{chain} of {total} shoto = {area} shoto ({ratio} share)",
+  "history_empty": "No history yet",
+  "history_clear": "Clear all",
+  "history_clear_confirm": "Tap again to confirm",
+  "history_delete": "Delete",
+  "history_saved": "Saved to history",
+  "ratio_share": "share",
+  "empty_hisab_hint": "Enter total shoto and ana-gonda parts"
 }
