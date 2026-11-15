@@ -1,0 +1,34 @@
+{
+  "source": {
+    "name": "Bangladesh Ministry of Land",
+    "asOf": "2025-05-01",
+    "url": "https://minland.gov.bd",
+    "disclaimerKey": "deed_document_governs"
+  },
+  "shareChain": {
+    "whole": 16,
+    "base": "ana",
+    "factors": { "gonda": 20, "kora": 80, "kranti": 240, "til": 4800 }
+  },
+  "absolute": [
+    { "id": "sqft", "sqft": "1" },
+    { "id": "shoto", "sqft": "435.6" },
+    { "id": "katha", "sqft": "720", "rateId": "katha" },
+    { "id": "bigha", "sqft": "14400", "rateId": "bigha" },
+    { "id": "acre", "sqft": "43560" },
+    { "id": "hectare", "sqft": "107639" },
+    { "id": "sqm", "sqft": "10.7639" },
+    { "id": "sqyard", "sqft": "9" },
+    { "id": "kani", "sqft": "17280" },
+    { "id": "gonda", "sqft": "864" },
+    { "id": "kora", "sqft": "216" },
+    { "id": "kranti", "sqft": "72" },
+    { "id": "til", "sqft": "3.6" },
+    { "id": "shatak", "sqft": "435.6" }
+  ],
+  "chain": { "ft": "66", "links": 100, "linkFt": "0.66" },
+  "gunia": {
+    "linksPerMile": "8000",
+    "scaleLinksPerInch": { "16": 500, "32": 250, "64": 125, "80": 100 }
+  }
+}
