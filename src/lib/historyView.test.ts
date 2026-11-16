@@ -68,6 +68,7 @@ describe("entryToRow", () => {
       expect(r.title).toBe("৮ আনা");
       expect(r.subtitle).toContain("৫০.০০");
       expect(r.subtitle).toContain("১/২");
+      expect(r.glyphText).toBe("৷৷");
     });
 
     it("renders fallback for malformed hishab entry", () => {
@@ -187,13 +188,15 @@ describe("entryToRow", () => {
     it("renders share chain title and ratio · area subtitle (bn)", () => {
       const r = entryToRow(reverseEntry(), "bn");
       expect(r.title).toBe("৮ আনা");
-      expect(r.subtitle.startsWith("১/২ · ৫০.০০")).toBe(true);
+      expect(r.subtitle).toContain("১/২ · ৫০.০০");
+      expect(r.glyphText).toBe("৷৷");
     });
 
     it("renders share chain title and ratio · area subtitle (en)", () => {
       const r = entryToRow(reverseEntry(), "en");
       expect(r.title).toBe("8 Ana");
       expect(r.subtitle).toBe("1/2 · 50.00 Shoto");
+      expect(r.glyphText).toBe("৷৷");
     });
 
     it("falls back for malformed reverse input JSON", () => {

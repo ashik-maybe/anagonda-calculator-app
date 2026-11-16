@@ -1,22 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Calculator } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../constants/theme";
 import { t, useLocale } from "../lib/i18n";
-import {
-  CHAIN_KEYS,
-  isHisabValid,
-  parseChainPart,
-  parseTotalShoto,
-  validateHisab,
-  type ChainKey,
-} from "../lib/validate";
+import { CHAIN_KEYS, parseChainPart, validateChain, type ChainKey } from "../lib/validate";
+import { div, frac, mul, parseDecimal, toDecimalString, toRatioString } from "../lib/fraction";
+import { toBanglaDigits } from "../lib/digits";
 import { shareArea, shareFraction, type AnaParts } from "../lib/share";
-import { decomposeShare } from "../lib/decomposition";
+import { decomposeShare, formatChain } from "../lib/decomposition";
 import { buildDeedResult } from "../lib/deed";
+import { convert, type AbsoluteUnitId } from "../lib/units";
 import { insertHistory } from "../lib/storage";
-import { hapticSuccess } from "../lib/haptics";
+import { hapticSuccess, hapticTick } from "../lib/haptics";
 import { InputCard } from "./InputCard";
 import { GlyphKeypad } from "./GlyphKeypad";
 import { Stepper } from "./Stepper";
@@ -26,7 +22,12 @@ import { useRates } from "./RatesProvider";
 export type HisabPrefill = {
   readonly totalShoto?: string;
   readonly parts?: Partial<Record<ChainKey, string>>;
+  readonly percent?: string;
+  readonly unit?: AbsoluteUnitId;
 };
+
+/** Units offered in the optional total-land picker (shatak = শতক). */
+const TOTAL_UNITS: readonly AbsoluteUnitId[] = ["shoto", "katha", "bigha", "shatak", "acre"];
 
 function prefillToState(prefill?: string): HisabPrefill | null {
   if (!prefill) return null;
@@ -34,16 +35,39 @@ function prefillToState(prefill?: string): HisabPrefill | null {
     const parsed = JSON.parse(prefill) as {
       totalShoto?: unknown;
       parts?: Partial<Record<ChainKey, unknown>> | null;
+      percent?: unknown;
+      unit?: unknown;
     };
-    if (typeof parsed.totalShoto !== "string") return null;
-    const parts: Partial<Record<ChainKey, string>> = {};
+    const result: {
+      totalShoto?: string;
+      parts?: Partial<Record<ChainKey, string>>;
+      percent?: string;
+      unit?: AbsoluteUnitId;
+    } = {};
+    if (typeof parsed.totalShoto === "string") result.totalShoto = parsed.totalShoto;
     if (parsed.parts && typeof parsed.parts === "object") {
+      const parts: Partial<Record<ChainKey, string>> = {};
       for (const key of CHAIN_KEYS) {
         const v = parsed.parts[key];
         if (typeof v === "string" || typeof v === "number") parts[key] = String(v);
       }
+      result.parts = parts;
     }
-    return { totalShoto: parsed.totalShoto, parts };
+    if (typeof parsed.percent === "string") result.percent = parsed.percent;
+    if (
+      typeof parsed.unit === "string" &&
+      (TOTAL_UNITS as readonly string[]).includes(parsed.unit)
+    ) {
+      result.unit = parsed.unit as AbsoluteUnitId;
+    }
+    if (
+      result.totalShoto === undefined &&
+      result.parts === undefined &&
+      result.percent === undefined
+    ) {
+      return null;
+    }
+    return result;
   } catch {
     return null;
   }
@@ -63,7 +87,9 @@ export function HisabForm({ prefill }: Props) {
     [prefill, params.prefill],
   );
 
-  const [totalShoto, setTotalShoto] = useState(() => prefillState?.totalShoto ?? "");
+  const [totalRaw, setTotalRaw] = useState(() => prefillState?.totalShoto ?? "");
+  const [totalUnit, setTotalUnit] = useState<AbsoluteUnitId>(() => prefillState?.unit ?? "shoto");
+  const [percent, setPercent] = useState(() => prefillState?.percent ?? "");
   const [chain, setChain] = useState<Record<ChainKey, string>>(() => {
     const base: Record<ChainKey, string> = { ana: "", gonda: "", kora: "", kranti: "", til: "" };
     for (const key of CHAIN_KEYS) {
@@ -73,36 +99,97 @@ export function HisabForm({ prefill }: Props) {
     return base;
   });
 
-  const errors = useMemo(() => validateHisab(totalShoto, chain), [totalShoto, chain]);
+  const percentFrac = useMemo(() => {
+    const s = percent.trim();
+    return s === "" ? null : parseDecimal(s);
+  }, [percent]);
+  const percentMode = percent.trim() !== "";
+  const percentActive = percentMode && percentFrac !== null && percentFrac.num > 0n;
+  const percentInvalid = percentMode && (percentFrac === null || percentFrac.num <= 0n);
 
-  const result = useMemo(() => {
-    if (!isHisabValid(errors)) return null;
-    const total = parseTotalShoto(totalShoto);
-    if (!total) return null;
-    const parts: AnaParts = {
+  const chainErrors = useMemo(
+    () => (percentActive ? {} : validateChain(chain)),
+    [percentActive, chain],
+  );
+  const chainValid = Object.values(chainErrors).every((e) => e == null);
+
+  const totalFrac = useMemo(() => {
+    const s = totalRaw.trim();
+    return s === "" ? null : parseDecimal(s);
+  }, [totalRaw]);
+  const totalInvalid = totalRaw.trim() !== "" && (totalFrac === null || totalFrac.num <= 0n);
+  const totalShoto = useMemo(
+    () => (totalFrac && totalFrac.num > 0n ? convert(totalFrac, totalUnit, "shoto", rates) : null),
+    [totalFrac, totalUnit, rates],
+  );
+
+  // Effective chain parts: percent mode decomposes percent/100 of the whole
+  // exactly; otherwise the typed fields (empty = 0).
+  const effParts: AnaParts | null = useMemo(() => {
+    if (percentActive && percentFrac) {
+      const share = div(percentFrac, frac(100));
+      return decomposeShare(share);
+    }
+    if (!chainValid) return null;
+    return {
       ana: parseChainPart(chain.ana) ?? 0,
       gonda: parseChainPart(chain.gonda) ?? 0,
       kora: parseChainPart(chain.kora) ?? 0,
       kranti: parseChainPart(chain.kranti) ?? 0,
       til: parseChainPart(chain.til) ?? 0,
     };
-    const share = shareFraction(parts);
-    const area = shareArea(total, parts);
+  }, [percentActive, percentFrac, chainValid, chain]);
+
+  const selAnaRaw = effParts?.ana ?? parseChainPart(chain.ana);
+  const selectedAna =
+    selAnaRaw !== null && selAnaRaw !== undefined && selAnaRaw >= 1 && selAnaRaw <= 16
+      ? selAnaRaw
+      : null;
+
+  const result = useMemo(() => {
+    if (!effParts) return null;
+    const share =
+      percentActive && percentFrac ? div(percentFrac, frac(100)) : shareFraction(effParts);
     const decomp = decomposeShare(share);
-    return {
-      deed: buildDeedResult(
-        { totalShoto: total, share, shareArea: area, chain: decomp, rates },
-        locale,
-      ),
-      parts,
-      share,
-      area,
-      inputJson: JSON.stringify({ mode: "hishab", totalShoto: totalShoto.trim(), parts }),
+    const labels = {
+      ana: t("ana"),
+      gonda: t("gonda"),
+      kora: t("kora"),
+      kranti: t("kranti"),
+      til: t("til"),
     };
-  }, [errors, totalShoto, chain, locale, rates]);
+    const digitsFor = (s: string) => (locale === "bn" ? toBanglaDigits(s) : s);
+    const chainText = formatChain(decomp, labels, locale);
+    const ratioText = digitsFor(toRatioString(share));
+    const percentText = digitsFor(toDecimalString(mul(share, frac(100)), 2));
+    const area = totalShoto
+      ? percentActive && percentFrac
+        ? mul(totalShoto, share)
+        : shareArea(totalShoto, effParts)
+      : null;
+    const deed =
+      totalShoto && area
+        ? buildDeedResult({ totalShoto, share, shareArea: area, chain: decomp, rates }, locale)
+        : null;
+    return {
+      share,
+      parts: effParts,
+      chainText,
+      ratioText,
+      percentText,
+      deed,
+      area,
+      inputJson: JSON.stringify({
+        mode: "hishab",
+        totalShoto: totalShoto ? toDecimalString(totalShoto, 4) : undefined,
+        parts: effParts,
+        percent: percentActive && percentFrac ? toDecimalString(percentFrac, 4) : undefined,
+      }),
+    };
+  }, [effParts, percentActive, percentFrac, totalShoto, locale, rates]);
 
   useEffect(() => {
-    if (!result) return;
+    if (!result?.deed) return;
     let hide: ReturnType<typeof setTimeout> | undefined;
     const timer = setTimeout(() => {
       const res = insertHistory({
@@ -110,7 +197,9 @@ export function HisabForm({ prefill }: Props) {
         inputJson: result.inputJson,
         resultJson: JSON.stringify({
           share: { num: result.share.num.toString(), den: result.share.den.toString() },
-          area: { num: result.area.num.toString(), den: result.area.den.toString() },
+          area: result.area
+            ? { num: result.area.num.toString(), den: result.area.den.toString() }
+            : undefined,
         }),
       });
       if (!res.deduped) {
@@ -131,9 +220,11 @@ export function HisabForm({ prefill }: Props) {
     setChain((prev) => ({ ...prev, [key]: value }));
 
   const chainError = (key: ChainKey): string | null => {
-    const err = errors.chain[key];
+    const err = chainErrors[key];
     return err ? t(err) : null;
   };
+
+  const localeNumPlaceholder = locale === "bn" ? "০.০০" : "0.00";
 
   return (
     <ScrollView
@@ -145,17 +236,22 @@ export function HisabForm({ prefill }: Props) {
       }}
       keyboardShouldPersistTaps="handled"
     >
-      <InputCard
-        label={t("total_shoto")}
-        value={totalShoto}
-        onChangeText={setTotalShoto}
-        error={totalShoto.trim() !== "" && errors.total ? t(errors.total) : null}
-        keyboardType="decimal-pad"
-        placeholder={locale === "bn" ? "০.০০" : "0.00"}
-        accessibilityHint={t("total_shoto")}
+      {/* 1 — Deed glyph strip, above the fields. Tap to set ana; typing ana highlights it. */}
+      <GlyphKeypad
+        onAna={(n) => setChain((prev) => ({ ...prev, ana: String(n) }))}
+        onKora={(n) => setChain((prev) => ({ ...prev, kora: String(n) }))}
+        onKranti={(n) => setChain((prev) => ({ ...prev, kranti: String(n) }))}
+        selectedAna={selectedAna}
+        disabled={percentActive}
       />
 
-      <View style={{ gap: spacing[2] }}>
+      {/* 2 — Ana chain fields (live-linked to the glyph strip) */}
+      <View
+        pointerEvents={percentActive ? "none" : "auto"}
+        accessibilityElementsHidden={percentActive}
+        importantForAccessibility={percentActive ? "no-hide-descendants" : "auto"}
+        style={{ gap: spacing[2], opacity: percentActive ? 0.4 : 1 }}
+      >
         {CHAIN_KEYS.map((key) => (
           <Stepper
             key={key}
@@ -167,12 +263,81 @@ export function HisabForm({ prefill }: Props) {
         ))}
       </View>
 
-      <GlyphKeypad
-        onAna={(n) => setChain((prev) => ({ ...prev, ana: String(n) }))}
-        onKora={(n) => setChain((prev) => ({ ...prev, kora: String(n) }))}
-        onKranti={(n) => setChain((prev) => ({ ...prev, kranti: String(n) }))}
+      {/* 3 — Percent shortcut: percent of the whole khatian, drives the chain */}
+      <InputCard
+        label={t("percent_label")}
+        value={percent}
+        onChangeText={setPercent}
+        error={percentInvalid ? t("err_positive") : null}
+        keyboardType="decimal-pad"
+        placeholder={locale === "bn" ? "৫০" : "50"}
+        accessibilityHint={t("percent_label")}
       />
+      {percentActive ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          style={{
+            color: colors.warn,
+            fontFamily: typography.fonts.bengali,
+            fontSize: typography.sizes[0],
+            textAlign: "center",
+          }}
+        >
+          {t("percent_note")}
+        </Text>
+      ) : null}
 
+      {/* 4 — Optional total land, any unit; converted to shoto exactly */}
+      <InputCard
+        label={t("total_optional")}
+        value={totalRaw}
+        onChangeText={setTotalRaw}
+        error={totalInvalid ? t("err_positive") : null}
+        keyboardType="decimal-pad"
+        placeholder={localeNumPlaceholder}
+        accessibilityHint={t("total_optional")}
+      />
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
+        {TOTAL_UNITS.map((id) => {
+          const selected = id === totalUnit;
+          return (
+            <Pressable
+              key={id}
+              accessibilityRole="button"
+              accessibilityLabel={t(`unit_${id}`)}
+              accessibilityState={{ selected }}
+              onPress={() => {
+                setTotalUnit(id);
+                hapticTick();
+              }}
+              style={{
+                minHeight: 48,
+                paddingHorizontal: spacing[3],
+                paddingVertical: spacing[1],
+                borderRadius: radius.full,
+                borderWidth: 1,
+                borderColor: selected ? colors.primary : colors.outlineVariant,
+                backgroundColor: selected ? colors.primaryContainer : "transparent",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                  fontFamily: typography.fonts.bengali,
+                  fontSize: typography.sizes[1],
+                  fontWeight: selected ? "600" : "400",
+                }}
+              >
+                {t(`unit_${id}`)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {/* 5 — Live answer card (no button) */}
       {result ? (
         <>
           {savedNote ? (
@@ -188,7 +353,76 @@ export function HisabForm({ prefill }: Props) {
               {t("history_saved")}
             </Text>
           ) : null}
-          <ResultCard deed={result.deed} />
+          {result.deed ? (
+            <ResultCard deed={result.deed} />
+          ) : (
+            <View
+              accessibilityRole="summary"
+              accessibilityLabel={`${t("result")}: ${result.chainText}, ${result.ratioText} ${t("ratio_share")}, ${result.percentText}%`}
+              style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.outlineVariant,
+                borderWidth: 1,
+                borderRadius: radius.lg,
+                padding: spacing[4],
+                gap: spacing[2],
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.onSurfaceVariant,
+                  fontSize: 12,
+                  fontWeight: "600",
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                }}
+              >
+                {t("result")}
+              </Text>
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: 28,
+                  lineHeight: 36,
+                  fontWeight: "700",
+                  textAlign: "center",
+                  fontFamily: typography.fonts.bengali,
+                }}
+              >
+                {result.chainText}
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "baseline",
+                  gap: spacing[4],
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.onSurface,
+                    fontSize: 20,
+                    fontWeight: "600",
+                    fontFamily: typography.fonts.bengali,
+                  }}
+                >
+                  {result.ratioText} {t("ratio_share")}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.onSurface,
+                    fontSize: 20,
+                    fontWeight: "600",
+                    fontFamily: typography.fonts.bengali,
+                  }}
+                >
+                  {result.percentText}%
+                </Text>
+              </View>
+            </View>
+          )}
         </>
       ) : (
         <View

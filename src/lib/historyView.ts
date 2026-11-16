@@ -1,7 +1,13 @@
 import bnDict from "../i18n/bn.json";
 import enDict from "../i18n/en.json";
 import { buildDeedResult, formatLand, type DeedResult } from "./deed";
-import { decomposeShare, formatChain, formatShareChain, type ChainLabels } from "./decomposition";
+import {
+  chainGlyphText,
+  decomposeShare,
+  formatChain,
+  formatShareChain,
+  type ChainLabels,
+} from "./decomposition";
 import { toBanglaDigits } from "./digits";
 import {
   cmp,
@@ -78,6 +84,7 @@ export function formatEntryDate(createdAt: number, locale: "bn" | "en"): string 
 export type HistoryRowView = {
   readonly title: string;
   readonly subtitle: string;
+  readonly glyphText?: string;
 };
 
 const chainLabels = (locale: "bn" | "en"): ChainLabels => ({
@@ -101,12 +108,20 @@ const fallbackRow = (locale: "bn" | "en"): HistoryRowView => ({
 });
 
 const hishabRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView => {
-  const deed = entryToDeed(entry, locale);
-  if (!deed) return fallbackRow(locale);
-  return {
-    title: deed.chainText,
-    subtitle: `${deed.areaText} ${localize(locale, "unit_shoto")} · ${deed.ratioText}`,
-  };
+  try {
+    const result = JSON.parse(entry.resultJson) as { share?: unknown };
+    const share = asFraction(result.share);
+    const deed = entryToDeed(entry, locale);
+    if (!deed || !share) return fallbackRow(locale);
+    const glyph = chainGlyphText(decomposeShare(share), locale);
+    return {
+      title: deed.chainText,
+      subtitle: `${deed.areaText} ${localize(locale, "unit_shoto")} · ${deed.ratioText}`,
+      glyphText: glyph,
+    };
+  } catch {
+    return fallbackRow(locale);
+  }
 };
 
 const bontonRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView => {
@@ -167,12 +182,15 @@ const reverseRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView =>
     if (!share || !area) return fallbackRow(locale);
 
     const labels = chainLabels(locale);
+    const chain = decomposeShare(share);
+    const glyph = chainGlyphText(chain, locale);
     return {
       title: formatShareChain(share, labels, locale),
       subtitle: `${digitsFor(locale, toRatioString(share))} · ${digitsFor(
         locale,
         toDecimalString(area, 2),
       )} ${localize(locale, "unit_shoto")}`,
+      glyphText: glyph,
     };
   } catch {
     return fallbackRow(locale);

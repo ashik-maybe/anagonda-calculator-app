@@ -110,7 +110,10 @@ export const radius = { sm: 8, md: 16, lg: 24, full: 9999 } as const;
 export const typography = {
   sizes: [12, 14, 16, 20, 28, 40] as const,
   fonts: { display: "BalooDa2", bengali: "NotoSansBengali", latin: "NotoSans" },
+  // Bengali matras need air; never go below 1.5 on Bengali body text.
+  lineHeights: { tight: 1.2, body: 1.6, loose: 1.8 } as const,
 } as const;
+export const motion = { fast: 120, base: 180, slow: 240 } as const;
 export function useThemeColors(): { colors: ThemeColors; isDark: boolean } {
   const preference = useThemePreference();
   const scheme = useColorScheme();

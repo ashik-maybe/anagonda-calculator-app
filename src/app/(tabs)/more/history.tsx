@@ -32,7 +32,7 @@ export default function HistoryScreen() {
       const deed = entryToDeed(entry, locale);
       const row = entryToRow(entry, locale);
       const hay =
-        `${entry.inputJson} ${entry.resultJson} ${row.title} ${row.subtitle} ${deed?.chainText ?? ""} ${deed?.areaText ?? ""} ${deed?.sentence ?? ""}`.toLowerCase();
+        `${entry.inputJson} ${entry.resultJson} ${row.title} ${row.subtitle} ${row.glyphText ?? ""} ${deed?.chainText ?? ""} ${deed?.areaText ?? ""} ${deed?.sentence ?? ""}`.toLowerCase();
       return hay.includes(q);
     });
   }, [rows, query, locale]);
@@ -123,12 +123,13 @@ export default function HistoryScreen() {
               <HistoryRow
                 title={row.title}
                 subtitle={row.subtitle}
+                glyphText={row.glyphText}
                 meta={formatEntryDate(item.createdAt, locale)}
                 deleteLabel={t("history_delete")}
                 locale={locale}
                 onPress={() =>
                   router.push({
-                    pathname: "/(tabs)/hishab",
+                    pathname: "/(tabs)/hissa",
                     params: { prefill: item.inputJson },
                   })
                 }

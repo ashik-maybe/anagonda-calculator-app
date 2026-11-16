@@ -105,9 +105,10 @@ export default function ResultCard({ deed }: Props) {
           {deed.ratioText} {t("ratio_share")}
         </Text>
         <Text
+          maxFontSizeMultiplier={1.2}
           style={{
             color: colors.onSurface,
-            fontSize: 40,
+            fontSize: 44,
             fontWeight: "700",
             fontFamily: typography.fonts.display,
           }}
