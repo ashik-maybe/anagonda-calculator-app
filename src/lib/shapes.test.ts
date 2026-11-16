@@ -9,8 +9,12 @@ import {
   rightArea,
   semicircleArea,
   shapeArea,
+  shapeFields,
+  shapeFromFields,
+  SHAPE_ORDER,
   squareArea,
   trapeziumArea,
+  triangleValid,
 } from "./shapes";
 
 describe("shapes", () => {
@@ -144,5 +148,58 @@ describe("shapes", () => {
     expect(areaToRatioString({ kind: "exact", value: frac(3, 2) })).toBe("3/2");
     expect(areaToRatioString({ kind: "sqrt", radicand: frac(135, 16) })).toBe("sqrt(135/16)");
     expect(areaToRatioString({ kind: "pi", coefficient: frac(2) })).toBe("2π");
+  });
+});
+
+describe("shapeFromFields/SHAPE_ORDER", () => {
+  test("SHAPE_ORDER has all 7 ids in outline order", () => {
+    expect(SHAPE_ORDER).toEqual([
+      "quad",
+      "square",
+      "trapezoid",
+      "triangle",
+      "rightTriangle",
+      "circle",
+      "semicircle",
+    ]);
+    expect(SHAPE_ORDER.length).toBe(7);
+  });
+
+  test("shapeFields exposes quad and triangle field ids", () => {
+    expect(shapeFields("quad")).toEqual(["len_1", "len_2", "width_1", "width_2"]);
+    expect(shapeFields("triangle")).toEqual(["side_a", "side_b", "side_c"]);
+  });
+
+  test("shapeFromFields builds quad/heron/right/circle specs", () => {
+    expect(
+      shapeFromFields("quad", {
+        len_1: frac(10),
+        len_2: frac(14),
+        width_1: frac(5),
+        width_2: frac(7),
+      }),
+    ).toEqual({ kind: "quad", l1: frac(10), l2: frac(14), w1: frac(5), w2: frac(7) });
+    expect(
+      shapeFromFields("triangle", { side_a: frac(3), side_b: frac(4), side_c: frac(5) }),
+    ).toEqual({ kind: "heron", a: frac(3), b: frac(4), c: frac(5) });
+    expect(shapeFromFields("rightTriangle", { base: frac(6), height: frac(8) })).toEqual({
+      kind: "right",
+      a: frac(6),
+      b: frac(8),
+    });
+    expect(shapeFromFields("circle", { radius: frac(7) })).toEqual({
+      kind: "circle",
+      r: frac(7),
+    });
+  });
+
+  test("triangleValid: strict inequality, degenerate rejected", () => {
+    expect(triangleValid(frac(3), frac(4), frac(5))).toBe(true);
+    expect(triangleValid(frac(2), frac(3), frac(5))).toBe(false);
+    expect(triangleValid(frac(1), frac(2), frac(10))).toBe(false);
+  });
+
+  test("shapeFromFields throws RangeError on missing field", () => {
+    expect(() => shapeFromFields("square", {})).toThrow(RangeError);
   });
 });

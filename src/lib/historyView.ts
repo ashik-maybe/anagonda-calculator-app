@@ -3,8 +3,18 @@ import enDict from "../i18n/en.json";
 import { buildDeedResult, formatLand, type DeedResult } from "./deed";
 import { decomposeShare, formatChain, formatShareChain, type ChainLabels } from "./decomposition";
 import { toBanglaDigits } from "./digits";
-import { frac, parseDecimal, toDecimalString, toRatioString, type Fraction } from "./fraction";
+import {
+  cmp,
+  frac,
+  parseDecimal,
+  toDecimalString,
+  toRatioString,
+  ZERO,
+  type Fraction,
+} from "./fraction";
+import { SHAPE_ORDER, type ShapeId } from "./shapes";
 import type { HistoryEntry } from "./storage";
+import { convert } from "./units";
 
 // Deterministic per call: no global locale state, so tests are stable.
 const dicts = {
@@ -169,12 +179,40 @@ const reverseRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView =>
   }
 };
 
+const porimapRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView => {
+  try {
+    const input = JSON.parse(entry.inputJson) as { shape?: unknown };
+    const result = JSON.parse(entry.resultJson) as { area?: unknown };
+    const shape = input.shape;
+    if (typeof shape !== "string" || !SHAPE_ORDER.includes(shape as ShapeId)) {
+      return fallbackRow(locale);
+    }
+    if (typeof result.area !== "string") return fallbackRow(locale);
+    const area = parseDecimal(result.area);
+    if (!area || cmp(area, ZERO) < 0) return fallbackRow(locale);
+
+    return {
+      title: `${localize(locale, "shape_" + shape)}: ${formatLand(area, 2, locale)} ${localize(
+        locale,
+        "unit_sqft",
+      )}`,
+      subtitle: `${formatLand(convert(area, "sqft", "sqm"), 2, locale)} ${localize(
+        locale,
+        "unit_sqm",
+      )}`,
+    };
+  } catch {
+    return fallbackRow(locale);
+  }
+};
+
 /**
  * Uniform history row rendering for every stored mode.
  * hishab: deed-based row; bonton: ledger-sum based row; reverse: share chain.
  * locale-keyed; never throws (fallback row on malformed data).
  */
 export function entryToRow(entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView {
+  if (entry.mode === "porimap") return porimapRow(entry, locale);
   if (entry.mode === "reverse") return reverseRow(entry, locale);
   return entry.mode === "bonton" ? bontonRow(entry, locale) : hishabRow(entry, locale);
 }

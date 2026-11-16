@@ -208,6 +208,43 @@ describe("entryToRow", () => {
       expect(r.title).toBeTruthy();
     });
   });
+
+  describe("porimap row (mode porimap)", () => {
+    const porimapEntry = (): HistoryEntry => ({
+      id: 77,
+      mode: "porimap",
+      inputJson: JSON.stringify({
+        mode: "porimap",
+        shape: "square",
+        inputs: { side: "12" },
+      }),
+      resultJson: JSON.stringify({ area: "144.0000000000" }),
+      createdAt: 1_700_000_000_000,
+    });
+
+    it("renders shape title with sqft area (bn)", () => {
+      const r = entryToRow(porimapEntry(), "bn");
+      expect(r.title).toContain("বর্গ");
+      expect(r.title).toContain("১৪৪.০০");
+    });
+
+    it("renders shape title with sqft area (en)", () => {
+      const r = entryToRow(porimapEntry(), "en");
+      expect(r.title).toContain("Square");
+    });
+
+    it("falls back for malformed porimap input JSON", () => {
+      const broken: HistoryEntry = {
+        id: 1,
+        mode: "porimap",
+        inputJson: "not json",
+        resultJson: "{}",
+        createdAt: 0,
+      };
+      const r = entryToRow(broken, "bn");
+      expect(r.title).toBeTruthy();
+    });
+  });
 });
 
 describe("formatEntryDate", () => {

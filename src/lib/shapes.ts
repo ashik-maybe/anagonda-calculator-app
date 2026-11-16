@@ -1,5 +1,6 @@
 import {
   add,
+  cmp,
   isPerfectSquareFraction,
   isqrt,
   mul,
@@ -133,5 +134,94 @@ export function areaToRatioString(area: ShapeArea): string {
       return `sqrt(${toRatioString(area.radicand)})`;
     case "pi":
       return `${toRatioString(area.coefficient)}π`;
+  }
+}
+
+export type ShapeId =
+  | "quad"
+  | "square"
+  | "trapezoid"
+  | "triangle"
+  | "rightTriangle"
+  | "circle"
+  | "semicircle";
+
+/** Outline/picker order; shared by the shape picker and history rows. */
+export const SHAPE_ORDER: readonly ShapeId[] = [
+  "quad",
+  "square",
+  "trapezoid",
+  "triangle",
+  "rightTriangle",
+  "circle",
+  "semicircle",
+];
+
+const FIELDS: Record<ShapeId, readonly string[]> = {
+  quad: ["len_1", "len_2", "width_1", "width_2"],
+  square: ["side"],
+  trapezoid: ["side_a", "side_b", "height"],
+  triangle: ["side_a", "side_b", "side_c"],
+  rightTriangle: ["base", "height"],
+  circle: ["radius"],
+  semicircle: ["radius"],
+};
+
+/** Field ids the picker renders inputs for, per shape. */
+export function shapeFields(shape: ShapeId): readonly string[] {
+  return FIELDS[shape];
+}
+
+/** Strict triangle inequality; degenerate (equality) rejected. */
+export function triangleValid(a: Fraction, b: Fraction, c: Fraction): boolean {
+  return cmp(add(a, b), c) > 0 && cmp(add(a, c), b) > 0 && cmp(add(b, c), a) > 0;
+}
+
+const required = (v: Record<string, Fraction>, name: string): Fraction => {
+  const value = v[name];
+  if (value === undefined) {
+    throw new RangeError(`shapeFromFields: missing field ${name}`);
+  }
+  return value;
+};
+
+/**
+ * Map validated per-field Fractions to a ShapeSpec.
+ * Caller validates positivity; this does not re-validate. A missing key throws
+ * RangeError("shapeFromFields: missing field <x>") — caller contract broken.
+ * Field names come from the FIELDS registry, identical to shapeFields ids.
+ */
+export function shapeFromFields(shape: ShapeId, v: Record<string, Fraction>): ShapeSpec {
+  switch (shape) {
+    case "quad":
+      return {
+        kind: "quad",
+        l1: required(v, "len_1"),
+        l2: required(v, "len_2"),
+        w1: required(v, "width_1"),
+        w2: required(v, "width_2"),
+      };
+    case "square":
+      return { kind: "square", side: required(v, "side") };
+    case "trapezoid":
+      return {
+        kind: "trapezium",
+        a: required(v, "side_a"),
+        b: required(v, "side_b"),
+        h: required(v, "height"),
+      };
+    case "triangle":
+      return {
+        kind: "heron",
+        a: required(v, "side_a"),
+        b: required(v, "side_b"),
+        c: required(v, "side_c"),
+      };
+    case "rightTriangle":
+      return { kind: "right", a: required(v, "base"), b: required(v, "height") };
+    case "circle":
+      return { kind: "circle", r: required(v, "radius") };
+    case "semicircle":
+      return { kind: "semicircle", r: required(v, "radius") };
   }
 }
