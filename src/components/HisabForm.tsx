@@ -145,6 +145,16 @@ export function HisabForm({ prefill }: Props) {
     selAnaRaw !== null && selAnaRaw !== undefined && selAnaRaw >= 1 && selAnaRaw <= 16
       ? selAnaRaw
       : null;
+  const selKoraRaw = effParts?.kora ?? parseChainPart(chain.kora);
+  const selectedKora =
+    selKoraRaw !== null && selKoraRaw !== undefined && selKoraRaw >= 1 && selKoraRaw <= 3
+      ? selKoraRaw
+      : null;
+  const selKrantiRaw = effParts?.kranti ?? parseChainPart(chain.kranti);
+  const selectedKranti =
+    selKrantiRaw !== null && selKrantiRaw !== undefined && selKrantiRaw >= 1 && selKrantiRaw <= 2
+      ? selKrantiRaw
+      : null;
 
   const result = useMemo(() => {
     if (!effParts) return null;
@@ -242,6 +252,8 @@ export function HisabForm({ prefill }: Props) {
         onKora={(n) => setChain((prev) => ({ ...prev, kora: String(n) }))}
         onKranti={(n) => setChain((prev) => ({ ...prev, kranti: String(n) }))}
         selectedAna={selectedAna}
+        selectedKora={selectedKora}
+        selectedKranti={selectedKranti}
         disabled={percentActive}
       />
 

@@ -9,6 +9,10 @@ type Props = {
   readonly onKranti: (n: number) => void;
   /** Ana value to highlight, or null for no selection. */
   readonly selectedAna?: number | null;
+  /** Kora value to highlight, or null for no selection. */
+  readonly selectedKora?: number | null;
+  /** Kranti value to highlight, or null for no selection. */
+  readonly selectedKranti?: number | null;
   /** When true, chips are dimmed and inert (e.g. percent mode). */
   readonly disabled?: boolean;
 };
@@ -24,6 +28,8 @@ export function GlyphKeypad({
   onKora,
   onKranti,
   selectedAna = null,
+  selectedKora = null,
+  selectedKranti = null,
   disabled = false,
 }: Props) {
   const { colors } = useThemeColors();
@@ -57,38 +63,44 @@ export function GlyphKeypad({
 
       <Text style={styles.rowLabel}>{t("kora")}</Text>
       <View style={styles.row}>
-        {KORA_GLYPHS.map((g) => (
-          <Pressable
-            key={g.kora}
-            accessibilityRole="button"
-            accessibilityLabel={`${g.glyph} ${g.kora} ${t("kora")}`}
-            accessibilityState={{ disabled }}
-            disabled={disabled}
-            onPress={() => onKora(g.kora)}
-            style={[styles.chip, disabled && styles.dimmed]}
-          >
-            <Text style={styles.glyph}>{g.glyph}</Text>
-            <Text style={styles.value}>{g.kora}</Text>
-          </Pressable>
-        ))}
+        {KORA_GLYPHS.map((g) => {
+          const selected = selectedKora === g.kora;
+          return (
+            <Pressable
+              key={g.kora}
+              accessibilityRole="button"
+              accessibilityLabel={`${g.glyph} ${g.kora} ${t("kora")}`}
+              accessibilityState={{ disabled, selected }}
+              disabled={disabled}
+              onPress={() => onKora(g.kora)}
+              style={[styles.chip, selected && styles.chipSelected, disabled && styles.dimmed]}
+            >
+              <Text style={[styles.glyph, selected && styles.glyphSelected]}>{g.glyph}</Text>
+              <Text style={[styles.value, selected && styles.valueSelected]}>{g.kora}</Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       <Text style={styles.rowLabel}>{t("kranti")}</Text>
       <View style={styles.row}>
-        {KRANTI_GLYPHS.map((g) => (
-          <Pressable
-            key={g.kranti}
-            accessibilityRole="button"
-            accessibilityLabel={`${g.glyph} ${g.kranti} ${t("kranti")}`}
-            accessibilityState={{ disabled }}
-            disabled={disabled}
-            onPress={() => onKranti(g.kranti)}
-            style={[styles.chip, disabled && styles.dimmed]}
-          >
-            <Text style={styles.glyph}>{g.glyph}</Text>
-            <Text style={styles.value}>{g.kranti}</Text>
-          </Pressable>
-        ))}
+        {KRANTI_GLYPHS.map((g) => {
+          const selected = selectedKranti === g.kranti;
+          return (
+            <Pressable
+              key={g.kranti}
+              accessibilityRole="button"
+              accessibilityLabel={`${g.glyph} ${g.kranti} ${t("kranti")}`}
+              accessibilityState={{ disabled, selected }}
+              disabled={disabled}
+              onPress={() => onKranti(g.kranti)}
+              style={[styles.chip, selected && styles.chipSelected, disabled && styles.dimmed]}
+            >
+              <Text style={[styles.glyph, selected && styles.glyphSelected]}>{g.glyph}</Text>
+              <Text style={[styles.value, selected && styles.valueSelected]}>{g.kranti}</Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
