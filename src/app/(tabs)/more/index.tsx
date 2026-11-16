@@ -1,6 +1,15 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { ChevronRight, Book, BookOpen, History, Info, Ruler, Scale } from "lucide-react-native";
+import {
+  ChevronRight,
+  Book,
+  BookOpen,
+  History,
+  Info,
+  Ruler,
+  Scale,
+  Settings,
+} from "lucide-react-native";
 import { useThemeColors, spacing, typography, radius } from "../../../constants/theme";
 import { t } from "../../../lib/i18n";
 import { hapticTick } from "../../../lib/haptics";
@@ -27,6 +36,12 @@ export default function MoreMenuScreen() {
       route: "/more/licenses" as const,
     },
     { key: "about", label: t("about"), icon: Info, route: "/more/about" as const },
+    {
+      key: "settings",
+      label: t("settings"),
+      icon: Settings,
+      route: "/more/settings" as const,
+    },
   ];
 
   return (

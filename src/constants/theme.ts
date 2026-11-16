@@ -1,4 +1,7 @@
 import { useColorScheme } from "react-native";
+import { useSyncExternalStore } from "react";
+
+export type ThemePreference = "system" | "light" | "dark";
 
 export type ThemeColors = {
   primary: string;
@@ -109,7 +112,32 @@ export const typography = {
   fonts: { display: "BalooDa2", bengali: "NotoSansBengali", latin: "NotoSans" },
 } as const;
 export function useThemeColors(): { colors: ThemeColors; isDark: boolean } {
+  const preference = useThemePreference();
   const scheme = useColorScheme();
-  const isDark = scheme === "dark";
+  const isDark = preference === "system" ? scheme === "dark" : preference === "dark";
   return { colors: isDark ? colorsDark : colorsLight, isDark };
+}
+
+// Manual theme override store (persisted by src/lib/settings.ts).
+let themePreference: ThemePreference = "system";
+const themeSubs = new Set<() => void>();
+
+export function getThemePreference(): ThemePreference {
+  return themePreference;
+}
+
+export function setThemePreference(preference: ThemePreference): void {
+  themePreference = preference;
+  themeSubs.forEach((fn) => fn());
+}
+
+function useThemePreference(): ThemePreference {
+  useSyncExternalStore(
+    (cb) => {
+      themeSubs.add(cb);
+      return () => themeSubs.delete(cb);
+    },
+    () => themePreference,
+  );
+  return themePreference;
 }

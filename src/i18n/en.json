@@ -113,5 +113,7 @@
   "glossary_empty": "No matching terms",
   "regional_variance": "Unit values vary by region — the deed governs",
   "about_on_device": "Everything stays on your device",
-  "share_app": "Share app"
+  "share_app": "Share app",
+  "haptics": "Haptic feedback",
+  "home_tip": "Good to know"
 }

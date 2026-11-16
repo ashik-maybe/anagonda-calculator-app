@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { I18nProvider } from "../lib/i18n";
+import { loadSettings } from "../lib/settings";
 import { useAppFonts } from "../lib/fonts";
 import { useThemeColors } from "../constants/theme";
 import { RatesProvider } from "../components/RatesProvider";
@@ -11,14 +12,27 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const loaded = useAppFonts();
   const { colors } = useThemeColors();
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   useEffect(() => {
-    if (loaded) {
+    let active = true;
+    loadSettings()
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setSettingsLoaded(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loaded && settingsLoaded) {
       void SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, settingsLoaded]);
 
-  if (!loaded) {
+  if (!loaded || !settingsLoaded) {
     return null;
   }
 

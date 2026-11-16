@@ -1,8 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
-import { ChevronRight, Info } from "lucide-react-native";
+import { ChevronRight, Info, Lightbulb } from "lucide-react-native";
 import raw from "../../data/units.json";
+import glossary from "../../data/glossary.json";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
 import { formatLand } from "../../lib/deed";
@@ -29,6 +30,14 @@ export default function HomeScreen() {
   const locale = useLocale();
   const router = useRouter();
   const [last, setLast] = useState<HistoryEntry | null>(null);
+  const [tipIndex, setTipIndex] = useState(
+    () => Math.floor(Date.now() / 10_000) % glossary.terms.length,
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => setTipIndex((i) => (i + 1) % glossary.terms.length), 10_000);
+    return () => clearInterval(timer);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,6 +56,7 @@ export default function HomeScreen() {
 
   const deed = last ? entryToDeed(last, locale) : null;
   const fact = dailyFact(locale);
+  const tip = glossary.terms[tipIndex];
 
   return (
     <ScrollView
@@ -156,6 +166,88 @@ export default function HomeScreen() {
           </Text>
         </View>
       ) : null}
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${tip.term_bn} — ${t("glossary")}`}
+        onPress={() => {
+          hapticTick();
+          router.push("/more/glossary");
+        }}
+        style={({ pressed }) => [
+          {
+            backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
+            borderColor: colors.outlineVariant,
+            borderWidth: 1,
+            borderRadius: radius.md,
+            padding: spacing[3],
+            gap: spacing[1],
+          },
+        ]}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing[1],
+          }}
+        >
+          <Lightbulb size={14} color={colors.primary} />
+          <Text
+            style={{
+              color: colors.onSurfaceVariant,
+              fontSize: 11,
+              fontWeight: "700",
+              letterSpacing: 1,
+              fontFamily: typography.fonts.bengali,
+            }}
+          >
+            {t("home_tip")}
+          </Text>
+        </View>
+        <Text
+          style={{
+            color: colors.onSurface,
+            fontSize: 14,
+            fontWeight: "600",
+            fontFamily: typography.fonts.bengali,
+          }}
+        >
+          {locale === "bn" ? tip.term_bn : tip.term_en}
+        </Text>
+        <Text
+          numberOfLines={2}
+          ellipsizeMode="tail"
+          style={{
+            color: colors.onSurfaceVariant,
+            fontSize: 12,
+            lineHeight: 17,
+            fontFamily: typography.fonts.bengali,
+          }}
+        >
+          {locale === "bn" ? tip.def_bn : tip.def_en}
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: spacing[0],
+          }}
+        >
+          <Text
+            style={{
+              color: colors.primary,
+              fontSize: 12,
+              fontWeight: "700",
+              fontFamily: typography.fonts.bengali,
+            }}
+          >
+            {t("glossary")}
+          </Text>
+          <ChevronRight color={colors.primary} size={16} />
+        </View>
+      </Pressable>
     </ScrollView>
   );
 }
