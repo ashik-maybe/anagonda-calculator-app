@@ -64,7 +64,7 @@ function makeStyles(colors: ReturnType<typeof useThemeColors>["colors"]) {
     label: {
       color: colors.onSurfaceVariant,
       fontFamily: typography.fonts.bengali,
-      fontSize: 13,
+      fontSize: 14,
       fontWeight: "600",
       letterSpacing: 0.5,
     },
@@ -78,12 +78,12 @@ function makeStyles(colors: ReturnType<typeof useThemeColors>["colors"]) {
     error: {
       color: colors.error,
       fontFamily: typography.fonts.bengali,
-      fontSize: typography.sizes[0],
+      fontSize: typography.sizes[1],
     },
     hint: {
       color: colors.onSurfaceVariant,
       fontFamily: typography.fonts.bengali,
-      fontSize: typography.sizes[0],
+      fontSize: typography.sizes[1],
     },
   });
 }

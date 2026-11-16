@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
@@ -95,110 +95,116 @@ export default function HishabScreen() {
   const formKey = `${prefill ?? "blank"}-${openNonce}`;
 
   return (
-    <View style={{ backgroundColor: colors.background, flex: 1 }}>
-      <View style={{ padding: spacing[3], paddingBottom: 0, gap: spacing[2] }}>
-        {last ? (
-          <Pressable
-            accessibilityLabel={`${t("home_last_result")}: ${lastTitle}`}
-            accessibilityRole="button"
-            onPress={onOpenLast}
-            style={({ pressed }) => [
-              {
-                alignItems: "center",
-                backgroundColor: colors.surface,
-                borderColor: colors.outlineVariant,
-                borderRadius: radius.lg,
-                borderWidth: 1,
-                flexDirection: "row",
-                gap: spacing[2],
-                minHeight: 64,
-                paddingHorizontal: spacing[3],
-                paddingVertical: spacing[2],
-              },
-              pressed && { backgroundColor: colors.surfaceVariant },
-            ]}
-          >
-            <View style={{ flex: 1, gap: spacing[0] }}>
-              <Text
-                style={{
-                  color: colors.onSurfaceVariant,
-                  fontSize: 11,
-                  fontWeight: "600",
-                  letterSpacing: 0.8,
-                  textTransform: "uppercase",
-                }}
-              >
-                {t("home_last_result")}
-              </Text>
-              <Text
-                style={{
-                  color: colors.primary,
-                  fontFamily: typography.fonts.bengali,
-                  fontSize: typography.sizes[3],
-                  fontWeight: "700",
-                }}
-              >
-                {lastTitle}
-              </Text>
-              <Text
-                style={{
-                  color: colors.onSurfaceVariant,
-                  fontFamily: typography.fonts.bengali,
-                  fontSize: 13,
-                }}
-              >
-                {lastSubtitle}
-              </Text>
-            </View>
-            <ChevronRight color={colors.onSurfaceVariant} size={20} />
-          </Pressable>
-        ) : (
-          <Text
-            style={{
-              color: colors.onSurfaceVariant,
-              fontFamily: typography.fonts.bengali,
-              fontSize: 13,
-              paddingVertical: spacing[1],
-              textAlign: "center",
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={90}
+      style={{ flex: 1 }}
+    >
+      <View style={{ backgroundColor: colors.background, flex: 1 }}>
+        <View style={{ padding: spacing[3], paddingBottom: 0, gap: spacing[2] }}>
+          {last ? (
+            <Pressable
+              accessibilityLabel={`${t("home_last_result")}: ${lastTitle}`}
+              accessibilityRole="button"
+              onPress={onOpenLast}
+              style={({ pressed }) => [
+                {
+                  alignItems: "center",
+                  backgroundColor: colors.surface,
+                  borderColor: colors.outlineVariant,
+                  borderRadius: radius.lg,
+                  borderWidth: 1,
+                  flexDirection: "row",
+                  gap: spacing[2],
+                  minHeight: 64,
+                  paddingHorizontal: spacing[3],
+                  paddingVertical: spacing[2],
+                },
+                pressed && { backgroundColor: colors.surfaceVariant },
+              ]}
+            >
+              <View style={{ flex: 1, gap: spacing[0] }}>
+                <Text
+                  style={{
+                    color: colors.onSurfaceVariant,
+                    fontSize: 11,
+                    fontWeight: "600",
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {t("home_last_result")}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontFamily: typography.fonts.bengali,
+                    fontSize: typography.sizes[3],
+                    fontWeight: "700",
+                  }}
+                >
+                  {lastTitle}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.onSurfaceVariant,
+                    fontFamily: typography.fonts.bengali,
+                    fontSize: 13,
+                  }}
+                >
+                  {lastSubtitle}
+                </Text>
+              </View>
+              <ChevronRight color={colors.onSurfaceVariant} size={20} />
+            </Pressable>
+          ) : (
+            <Text
+              style={{
+                color: colors.onSurfaceVariant,
+                fontFamily: typography.fonts.bengali,
+                fontSize: 13,
+                paddingVertical: spacing[1],
+                textAlign: "center",
+              }}
+            >
+              {t("hissa_glyph_hint")}
+            </Text>
+          )}
+          <SegmentedControl
+            accessibilityLabel={t("tab_hissa")}
+            onChange={(key) => {
+              const next: HishabMode =
+                key === "bonton" ? "bonton" : key === "reverse" ? "reverse" : "hishab";
+              setMode(next);
             }}
-          >
-            {t("hissa_glyph_hint")}
-          </Text>
-        )}
-        <SegmentedControl
-          accessibilityLabel={t("tab_hissa")}
-          onChange={(key) => {
-            const next: HishabMode =
-              key === "bonton" ? "bonton" : key === "reverse" ? "reverse" : "hishab";
-            setMode(next);
-          }}
-          segments={[
-            { key: "hishab", label: t("quick_hishab") },
-            { key: "reverse", label: t("quick_reverse") },
-            { key: "bonton", label: t("quick_bonton") },
-          ]}
-          value={mode}
-        />
+            segments={[
+              { key: "hishab", label: t("quick_hishab") },
+              { key: "reverse", label: t("quick_reverse") },
+              { key: "bonton", label: t("quick_bonton") },
+            ]}
+            value={mode}
+          />
+        </View>
+        {/* Keep all forms mounted so typed input survives segment switches. */}
+        <View
+          key={`hishab-${formKey}`}
+          style={{ flex: 1, display: mode === "hishab" ? "flex" : "none" }}
+        >
+          <HisabForm prefill={prefill} />
+        </View>
+        <View
+          key={`reverse-${formKey}`}
+          style={{ flex: 1, display: mode === "reverse" ? "flex" : "none" }}
+        >
+          <ReverseForm prefill={prefill} />
+        </View>
+        <View
+          key={`bonton-${formKey}`}
+          style={{ flex: 1, display: mode === "bonton" ? "flex" : "none" }}
+        >
+          <BontonForm prefill={prefill} />
+        </View>
       </View>
-      {/* Keep all forms mounted so typed input survives segment switches. */}
-      <View
-        key={`hishab-${formKey}`}
-        style={{ flex: 1, display: mode === "hishab" ? "flex" : "none" }}
-      >
-        <HisabForm prefill={prefill} />
-      </View>
-      <View
-        key={`reverse-${formKey}`}
-        style={{ flex: 1, display: mode === "reverse" ? "flex" : "none" }}
-      >
-        <ReverseForm prefill={prefill} />
-      </View>
-      <View
-        key={`bonton-${formKey}`}
-        style={{ flex: 1, display: mode === "bonton" ? "flex" : "none" }}
-      >
-        <BontonForm prefill={prefill} />
-      </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

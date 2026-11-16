@@ -71,6 +71,15 @@ const TEXT_PAIRS = [
   ["onWarnContainer", "warnContainer"],
   ["inverseOnSurface", "inverseSurface"],
   ["onSurfaceVariant", "background"],
+  ["warn", "background"],
+  ["warn", "surface"],
+  ["warn", "surfaceVariant"],
+  ["success", "background"],
+  ["success", "surface"],
+  ["success", "surfaceVariant"],
+  ["error", "background"],
+  ["error", "surface"],
+  ["error", "surfaceVariant"],
 ];
 
 /** Link/brand text pairs — also body size, same 4.5:1 bar. */

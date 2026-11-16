@@ -22,7 +22,9 @@ export function TonalButton({
   const styles = makeStyles(colors, variant);
 
   const handlePress = () => {
-    hapticTick();
+    if (variant === "filled" || variant === "destructive") {
+      hapticTick();
+    }
     onPress();
   };
 

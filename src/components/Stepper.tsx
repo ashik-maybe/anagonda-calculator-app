@@ -112,7 +112,7 @@ function makeStyles(colors: ReturnType<typeof useThemeColors>["colors"]) {
     error: {
       color: colors.error,
       fontFamily: typography.fonts.bengali,
-      fontSize: typography.sizes[0],
+      fontSize: typography.sizes[1],
     },
   });
 }
