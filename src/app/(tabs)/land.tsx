@@ -309,7 +309,7 @@ export default function LandScreen() {
                 fontFamily: typography.fonts.bengali,
               }}
             >
-              মাপের একক
+              {t("land_input_unit")}
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
               {(["ft", "hat", "link", "meter"] as const).map((u) => {

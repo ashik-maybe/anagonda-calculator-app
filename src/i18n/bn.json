@@ -206,5 +206,13 @@
   "history_group_yesterday": "গতকাল",
   "history_group_older": "আগের",
   "term_sheet_all": "সব শব্দ",
-  "close": "বন্ধ করুন"
+  "close": "বন্ধ করুন",
+  "land_input_unit": "মাপের একক",
+  "hisab_clear": "পরিষ্কার করুন",
+  "recent_see_all": "সব দেখুন",
+  "more_section_tools": "টুলস",
+  "more_section_app": "অ্যাপ",
+  "clear_input": "ইনপুট মুছুন",
+  "percent_clear": "শতকরা বন্ধ করুন",
+  "glossary_card_label": "শব্দের বিবরণ"
 }

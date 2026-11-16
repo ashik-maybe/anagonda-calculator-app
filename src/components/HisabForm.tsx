@@ -406,13 +406,19 @@ export function HisabForm({ prefill }: Props) {
             ) : null}
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t("history_clear")}
+              accessibilityLabel={t("percent_clear")}
               onPress={() => {
                 setPercent("");
                 setPercentOpen(false);
               }}
               style={({ pressed }) => [
-                { alignSelf: "flex-end", padding: spacing[1] },
+                {
+                  alignItems: "center",
+                  alignSelf: "flex-end",
+                  justifyContent: "center",
+                  minHeight: 44,
+                  minWidth: 44,
+                },
                 pressed && { opacity: 0.6 },
               ]}
             >
@@ -588,7 +594,7 @@ export function HisabForm({ prefill }: Props) {
       {/* Reset */}
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t("history_clear")}
+        accessibilityLabel={t("hisab_clear")}
         onPress={() => {
           setTotalRaw("");
           setPercent("");
@@ -616,7 +622,7 @@ export function HisabForm({ prefill }: Props) {
             fontWeight: "600",
           }}
         >
-          পরিষ্কার করুন
+          {t("hisab_clear")}
         </Text>
       </Pressable>
     </ScrollView>

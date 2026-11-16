@@ -20,7 +20,7 @@ import {
 } from "./fraction";
 import { SHAPE_ORDER, shapeKey, type ShapeId } from "./shapes";
 import type { HistoryEntry } from "./storage";
-import { convert } from "./units";
+import { absoluteUnitIds, convert } from "./units";
 
 // Deterministic per call: no global locale state, so tests are stable.
 const dicts = {
@@ -224,13 +224,47 @@ const porimapRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView =>
   }
 };
 
+const convertRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView => {
+  try {
+    const input = JSON.parse(entry.inputJson) as {
+      value?: unknown;
+      from?: unknown;
+      to?: unknown;
+    };
+    const result = JSON.parse(entry.resultJson) as { output?: unknown };
+    if (
+      typeof input.value !== "string" ||
+      typeof input.from !== "string" ||
+      typeof input.to !== "string" ||
+      typeof result.output !== "string"
+    ) {
+      return fallbackRow(locale);
+    }
+    const ids = absoluteUnitIds as readonly string[];
+    if (!ids.includes(input.from) || !ids.includes(input.to)) return fallbackRow(locale);
+    const inputValue = parseDecimal(input.value);
+    const output = parseDecimal(result.output);
+    if (!inputValue || inputValue.num <= 0n) return fallbackRow(locale);
+    if (!output || output.num <= 0n) return fallbackRow(locale);
+
+    return {
+      title: `${formatLand(inputValue, 2, locale)} ${localize(locale, `unit_${input.from}`)} → ${formatLand(output, 2, locale)} ${localize(locale, `unit_${input.to}`)}`,
+      subtitle: `${localize(locale, "convert_from")}: ${localize(locale, `unit_${input.from}`)} · ${localize(locale, "convert_to")}: ${localize(locale, `unit_${input.to}`)}`,
+    };
+  } catch {
+    return fallbackRow(locale);
+  }
+};
+
 /**
  * Uniform history row rendering for every stored mode.
  * hishab: deed-based row; bonton: ledger-sum based row; reverse: share chain.
+ * convert: unit-conversion pair.
  * locale-keyed; never throws (fallback row on malformed data).
  */
 export function entryToRow(entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView {
   if (entry.mode === "porimap") return porimapRow(entry, locale);
   if (entry.mode === "reverse") return reverseRow(entry, locale);
+  if (entry.mode === "convert") return convertRow(entry, locale);
   return entry.mode === "bonton" ? bontonRow(entry, locale) : hishabRow(entry, locale);
 }

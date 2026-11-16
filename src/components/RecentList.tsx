@@ -53,7 +53,7 @@ export function RecentList({ entries, onOpen, locale }: Props) {
         );
       })}
       <Pressable
-        accessibilityLabel={locale === "bn" ? "সব দেখুন" : "See all"}
+        accessibilityLabel={t("recent_see_all")}
         accessibilityRole="button"
         onPress={() => router.push("/more/history")}
         style={({ pressed }) => [
@@ -61,7 +61,7 @@ export function RecentList({ entries, onOpen, locale }: Props) {
           pressed && { backgroundColor: colors.surfaceVariant },
         ]}
       >
-        <Text style={rowsStyle.footerText}>{locale === "bn" ? "সব দেখুন" : "See all"}</Text>
+        <Text style={rowsStyle.footerText}>{t("recent_see_all")}</Text>
         <ChevronRight color={colors.primary} size={20} />
       </Pressable>
     </View>

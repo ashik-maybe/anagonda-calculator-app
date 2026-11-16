@@ -206,5 +206,13 @@
   "history_group_yesterday": "Yesterday",
   "history_group_older": "Older",
   "term_sheet_all": "All terms",
-  "close": "Close"
+  "close": "Close",
+  "land_input_unit": "Input unit",
+  "hisab_clear": "Clear",
+  "recent_see_all": "See all",
+  "more_section_tools": "Tools",
+  "more_section_app": "App",
+  "clear_input": "Clear input",
+  "percent_clear": "Close percent",
+  "glossary_card_label": "Term definition"
 }

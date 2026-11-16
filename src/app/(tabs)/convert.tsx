@@ -14,8 +14,9 @@ import * as Clipboard from "expo-clipboard";
 import { ArrowLeftRight, Check, ChevronDown, ChevronUp, Copy, X } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
-import { absoluteUnitIds, unitFactor, type AbsoluteUnitId } from "../../lib/units";
-import { frac } from "../../lib/fraction";
+import { absoluteUnitIds, convert, unitFactor, type AbsoluteUnitId } from "../../lib/units";
+import { frac, toDecimalString } from "../../lib/fraction";
+import { insertHistory } from "../../lib/storage";
 import unitsData from "../../data/units.json";
 import { isDefaultRates } from "../../lib/rates";
 import { useRates } from "../../components/RatesProvider";
@@ -32,7 +33,7 @@ export default function ConvertScreen() {
   const { colors } = useThemeColors();
   const locale = useLocale();
   const { rates } = useRates();
-  const params = useLocalSearchParams<{ value?: string; from?: string }>();
+  const params = useLocalSearchParams<{ value?: string; from?: string; to?: string }>();
 
   const [raw, setRaw] = useState(() => params.value ?? "");
   const [from, setFrom] = useState(() => {
@@ -41,7 +42,12 @@ export default function ConvertScreen() {
       ? (f as (typeof absoluteUnitIds)[number])
       : "shoto";
   });
-  const [to, setTo] = useState<AbsoluteUnitId>("sqft");
+  const [to, setTo] = useState<AbsoluteUnitId>(() => {
+    const target = params.to;
+    return target && (absoluteUnitIds as readonly string[]).includes(target)
+      ? (target as (typeof absoluteUnitIds)[number])
+      : "sqft";
+  });
   const [kaniConvention, setKaniConvention] = useState<"20gonda" | "40shoto">("20gonda");
   const [copiedUnit, setCopiedUnit] = useState<AbsoluteUnitId | null>(null);
   const [allOpen, setAllOpen] = useState(true);
@@ -69,6 +75,29 @@ export default function ConvertScreen() {
     }
     return out;
   }, [value, from, rates, locale, kaniSqft]);
+
+  const converted = useMemo(
+    () => (value ? convert(value, from, to, rates, kaniSqft) : null),
+    [value, from, to, rates, kaniSqft],
+  );
+
+  const payload = useMemo(() => {
+    if (!value || !converted) return null;
+    return {
+      mode: "convert",
+      inputJson: JSON.stringify({ value: toDecimalString(value, 4), from, to }),
+      resultJson: JSON.stringify({ output: toDecimalString(converted, 4) }),
+    };
+  }, [value, from, to, converted]);
+
+  useEffect(() => {
+    if (!payload) return;
+    const timer = setTimeout(() => {
+      const row = insertHistory(payload);
+      if (!row.deduped) hapticSuccess();
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [payload]);
 
   useEffect(() => {
     if (copiedUnit === null) return;
@@ -135,7 +164,7 @@ export default function ConvertScreen() {
           </View>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t("history_delete")}
+            accessibilityLabel={t("clear_input")}
             disabled={raw === ""}
             hitSlop={8}
             onPress={() => {
@@ -438,8 +467,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: radius.full,
     justifyContent: "center",
-    minHeight: 32,
-    minWidth: 32,
+    minHeight: 44,
+    minWidth: 44,
   },
   hint: { fontSize: 14, textAlign: "center" },
   footer: { alignItems: "center", gap: spacing[1], paddingTop: spacing[2] },

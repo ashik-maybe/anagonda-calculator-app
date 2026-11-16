@@ -1,7 +1,7 @@
 import { Modal, Pressable, ScrollView } from "react-native";
 import glossary from "../data/glossary.json";
 import { useThemeColors, radius, spacing } from "../constants/theme";
-import { t, useLocale } from "../lib/i18n";
+import { t } from "../lib/i18n";
 import { categoryLabelKey, type Term } from "../lib/terms";
 import { BnText } from "./BnText";
 
@@ -9,12 +9,11 @@ export type TermSheetProps = { termId: string | null; onClose: () => void };
 
 export function TermSheet({ termId, onClose }: TermSheetProps) {
   const { colors } = useThemeColors();
-  const locale = useLocale();
   const term = termId
     ? (glossary.terms.find((t) => t.id === termId) as Term | undefined)
     : undefined;
   const categoryLabel = term ? t(categoryLabelKey(term.category)) : "";
-  const closeLabel = locale === "bn" ? "বন্ধ করুন" : "Close";
+  const closeLabel = t("close");
   return (
     <Modal
       visible={termId !== null && !!term}
@@ -23,10 +22,18 @@ export function TermSheet({ termId, onClose }: TermSheetProps) {
       onRequestClose={onClose}
     >
       <Pressable
-        style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" }}
+        accessibilityRole="button"
+        accessibilityLabel={closeLabel}
+        style={{
+          flex: 1,
+          backgroundColor: colors.scrim,
+          opacity: 0.92,
+          justifyContent: "flex-end",
+        }}
         onPress={onClose}
       >
         <Pressable
+          accessibilityRole="summary"
           onPress={() => {}}
           style={{
             backgroundColor: colors.surface,

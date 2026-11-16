@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { t } from "./i18n";
 import { entryToDeed, entryToRow, formatEntryDate } from "./historyView";
 import type { HistoryEntry } from "./storage";
 
@@ -246,6 +247,75 @@ describe("entryToRow", () => {
       };
       const r = entryToRow(broken, "bn");
       expect(r.title).toBeTruthy();
+    });
+  });
+
+  describe("convert row (mode convert)", () => {
+    const convertEntry = (): HistoryEntry => ({
+      id: 55,
+      mode: "convert",
+      inputJson: JSON.stringify({ value: "100", from: "shoto", to: "sqft" }),
+      resultJson: JSON.stringify({ output: "43560" }),
+      createdAt: 1_700_000_000_000,
+    });
+
+    it("renders 100 shoto → 43,560 sqft with Bangla digits (bn)", () => {
+      const r = entryToRow(convertEntry(), "bn");
+      expect(r.title).toBe("১০০.০০ শতাংশ → ৪৩,৫৬০.০০ বর্গফুট");
+      expect(r.subtitle).toBe("যে একক থেকে: শতাংশ · যে এককে: বর্গফুট");
+    });
+
+    it("renders Latin digits for en locale", () => {
+      const r = entryToRow(convertEntry(), "en");
+      expect(r.title).toBe("100.00 Shoto → 43,560.00 Square foot");
+      expect(r.subtitle).toBe("From: Shoto · To: Square foot");
+    });
+
+    it('falls back for malformed JSON (fallback title equals t("history"))', () => {
+      const broken: HistoryEntry = {
+        id: 1,
+        mode: "convert",
+        inputJson: "not json",
+        resultJson: "{}",
+        createdAt: 0,
+      };
+      const r = entryToRow(broken, "bn");
+      expect(r.title).toBe(t("history"));
+      expect(r.subtitle).toBeTruthy();
+    });
+
+    it("falls back for missing field", () => {
+      const r = entryToRow(
+        {
+          ...convertEntry(),
+          inputJson: JSON.stringify({ value: "100", from: "shoto" }),
+        },
+        "bn",
+      );
+      expect(r.title).toBe(t("history"));
+    });
+
+    it("falls back for unknown unit id", () => {
+      const r = entryToRow(
+        {
+          ...convertEntry(),
+          inputJson: JSON.stringify({ value: "100", from: "shoto", to: "nope" }),
+        },
+        "bn",
+      );
+      expect(r.title).toBe(t("history"));
+    });
+
+    it("falls back for non-positive or unparseable output", () => {
+      const zeroOut = { ...convertEntry(), resultJson: JSON.stringify({ output: "0" }) };
+      const badOut = { ...convertEntry(), resultJson: JSON.stringify({ output: "x" }) };
+      const negVal = {
+        ...convertEntry(),
+        inputJson: JSON.stringify({ value: "-5", from: "shoto", to: "sqft" }),
+      };
+      expect(entryToRow(zeroOut, "bn").title).toBe(t("history"));
+      expect(entryToRow(badOut, "bn").title).toBe(t("history"));
+      expect(entryToRow(negVal, "bn").title).toBe(t("history"));
     });
   });
 });

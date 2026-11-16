@@ -11,7 +11,7 @@ import {
   validateChain,
   type ChainKey,
 } from "../lib/validate";
-import { cmp, isZero, mul, ONE, sub, type Fraction } from "../lib/fraction";
+import { cmp, isZero, mul, ONE, sub, ZERO, type Fraction } from "../lib/fraction";
 import { shareArea, shareFraction, type AnaParts } from "../lib/share";
 import {
   decomposeShare,
@@ -245,9 +245,9 @@ export function BontonForm({ prefill }: { readonly prefill?: string }) {
       const shareRows: OwnerShareRow[] = rows.map((r) => ({
         name: r.owner.name,
         chainText: formatChain(decomposeShare(r.share), labels, locale),
-        areaText: r.area ? formatLand(r.area, 2, locale) : "0.00",
+        areaText: r.area ? formatLand(r.area, 2, locale) : formatLand(ZERO, 2, locale),
       }));
-      const totalText = total ? formatLand(total, 2, locale) : "0.00";
+      const totalText = total ? formatLand(total, 2, locale) : formatLand(ZERO, 2, locale);
       const text = buildBontonShareText(shareRows, {
         totalText,
         sumChainText: formatShareChain(sum, labels, locale),
@@ -285,7 +285,7 @@ export function BontonForm({ prefill }: { readonly prefill?: string }) {
         onChangeText={setTotalShoto}
         error={totalError ? t(totalError) : null}
         keyboardType="decimal-pad"
-        placeholder="0.00"
+        placeholder={locale === "bn" ? "০.০০" : "0.00"}
         accessibilityHint={t("total_shoto")}
       />
 
@@ -296,7 +296,7 @@ export function BontonForm({ prefill }: { readonly prefill?: string }) {
           Object.entries(chainErrors).map(([k, v]) => [k, v ? t(v) : null]),
         );
         const shareText = formatChain(decomposeShare(row.share), labels, locale);
-        const areaText = row.area ? formatLand(row.area, 2, locale) : "0.00";
+        const areaText = row.area ? formatLand(row.area, 2, locale) : formatLand(ZERO, 2, locale);
         const barState = cmp(row.share, ONE) > 0 ? "over" : isZero(row.share) ? "under" : "ok";
         const deed = deedById.get(o.id) ?? null;
         return (

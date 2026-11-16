@@ -150,6 +150,28 @@ export default function HistoryScreen() {
                       // fall through to hissa prefill
                     }
                   }
+                  if (item.mode === "convert") {
+                    try {
+                      const parsed = JSON.parse(item.inputJson) as {
+                        value?: unknown;
+                        from?: unknown;
+                        to?: unknown;
+                      };
+                      if (
+                        typeof parsed.value === "string" &&
+                        typeof parsed.from === "string" &&
+                        typeof parsed.to === "string"
+                      ) {
+                        router.push({
+                          pathname: "/(tabs)/convert",
+                          params: { value: parsed.value, from: parsed.from, to: parsed.to },
+                        });
+                        return;
+                      }
+                    } catch {
+                      // fall through to hissa prefill
+                    }
+                  }
                   router.push({
                     pathname: "/(tabs)/hissa",
                     params: { prefill: item.inputJson },

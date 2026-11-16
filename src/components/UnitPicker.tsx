@@ -98,7 +98,12 @@ export function UnitPicker({ value, onSelect, exclude, titleKey }: Props) {
       </Pressable>
 
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("close")}
+          style={styles.backdrop}
+          onPress={() => setOpen(false)}
+        >
           <Pressable style={styles.sheet} onPress={() => {}} accessibilityRole="summary">
             <View style={styles.grabber} />
             <Text style={[styles.title, { color: colors.onSurface }]}>{t(titleKey)}</Text>
@@ -184,7 +189,8 @@ const makeStyles = (colors: ReturnType<typeof useThemeColors>["colors"]) =>
       fontWeight: "700",
     },
     backdrop: {
-      backgroundColor: "rgba(0,0,0,0.4)",
+      backgroundColor: colors.scrim,
+      opacity: 0.92,
       flex: 1,
       justifyContent: "flex-end",
     },

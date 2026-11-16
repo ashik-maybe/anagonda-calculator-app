@@ -68,6 +68,7 @@ export default function GlossaryScreen() {
             <Pressable
               key={term.id}
               accessibilityRole="button"
+              accessibilityLabel={`${term.term_bn}, ${t("glossary_card_label")}`}
               onPress={() => setSelectedId(term.id)}
               style={({ pressed }) => [
                 styles.card,
@@ -160,6 +161,8 @@ const styles = StyleSheet.create({
   chip: {
     borderRadius: radius.full,
     borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 44,
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[1],
   },

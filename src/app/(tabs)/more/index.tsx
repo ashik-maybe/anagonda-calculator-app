@@ -21,7 +21,7 @@ export default function MoreMenuScreen() {
 
   const sections = [
     {
-      title: "টুলস",
+      title: t("more_section_tools"),
       items: [
         { key: "rates", label: t("rates"), icon: Ruler, route: "/more/rates" as const },
         {
@@ -34,7 +34,7 @@ export default function MoreMenuScreen() {
       ],
     },
     {
-      title: "অ্যাপ",
+      title: t("more_section_app"),
       items: [
         { key: "history", label: t("history"), icon: History, route: "/more/history" as const },
         {
