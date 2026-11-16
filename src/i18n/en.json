@@ -80,5 +80,13 @@
   "sum_ok": "16 ana complete",
   "owner_count": "Owner {n}",
   "owner_name": "Name",
-  "sum_remainder": "remaining"
+  "sum_remainder": "remaining",
+  "area_label": "Area",
+  "reverse_empty_hint": "Enter area, unit and total shoto",
+  "rates_katha": "Katha in sqft",
+  "rates_bigha": "Bigha in sqft",
+  "rates_reset": "Reset to defaults",
+  "rates_saved": "Rates saved",
+  "rates_badge": "Custom rate active",
+  "rates_save": "Save rates"
 }

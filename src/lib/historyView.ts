@@ -3,7 +3,7 @@ import enDict from "../i18n/en.json";
 import { buildDeedResult, formatLand, type DeedResult } from "./deed";
 import { decomposeShare, formatChain, formatShareChain, type ChainLabels } from "./decomposition";
 import { toBanglaDigits } from "./digits";
-import { frac, parseDecimal, type Fraction } from "./fraction";
+import { frac, parseDecimal, toDecimalString, toRatioString, type Fraction } from "./fraction";
 import type { HistoryEntry } from "./storage";
 
 // Deterministic per call: no global locale state, so tests are stable.
@@ -135,11 +135,46 @@ const bontonRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView => 
   }
 };
 
+const reverseRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView => {
+  try {
+    const input = JSON.parse(entry.inputJson) as {
+      area?: unknown;
+      unit?: unknown;
+      totalShoto?: unknown;
+    };
+    const result = JSON.parse(entry.resultJson) as { share?: unknown; area?: unknown };
+    if (
+      typeof input.area !== "string" ||
+      typeof input.unit !== "string" ||
+      typeof input.totalShoto !== "string"
+    ) {
+      return fallbackRow(locale);
+    }
+    const total = parseDecimal(input.totalShoto);
+    if (!total || total.num <= 0n) return fallbackRow(locale);
+    const share = asFraction(result.share);
+    const area = asFraction(result.area);
+    if (!share || !area) return fallbackRow(locale);
+
+    const labels = chainLabels(locale);
+    return {
+      title: formatShareChain(share, labels, locale),
+      subtitle: `${digitsFor(locale, toRatioString(share))} · ${digitsFor(
+        locale,
+        toDecimalString(area, 2),
+      )} ${localize(locale, "unit_shoto")}`,
+    };
+  } catch {
+    return fallbackRow(locale);
+  }
+};
+
 /**
  * Uniform history row rendering for every stored mode.
- * hishab: deed-based row; bonton: ledger-sum based row.
+ * hishab: deed-based row; bonton: ledger-sum based row; reverse: share chain.
  * locale-keyed; never throws (fallback row on malformed data).
  */
 export function entryToRow(entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView {
+  if (entry.mode === "reverse") return reverseRow(entry, locale);
   return entry.mode === "bonton" ? bontonRow(entry, locale) : hishabRow(entry, locale);
 }

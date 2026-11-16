@@ -20,6 +20,7 @@ import { hapticSuccess } from "../lib/haptics";
 import { InputCard } from "./InputCard";
 import { Stepper } from "./Stepper";
 import ResultCard from "./ResultCard";
+import { useRates } from "./RatesProvider";
 
 export type HisabPrefill = {
   readonly totalShoto?: string;
@@ -54,6 +55,7 @@ type Props = {
 export function HisabForm({ prefill }: Props) {
   const { colors } = useThemeColors();
   const locale = useLocale();
+  const { rates } = useRates();
   const params = useLocalSearchParams<{ prefill?: string }>();
   const prefillState = useMemo(
     () => prefillToState(prefill ?? params.prefill),
@@ -87,13 +89,16 @@ export function HisabForm({ prefill }: Props) {
     const area = shareArea(total, parts);
     const decomp = decomposeShare(share);
     return {
-      deed: buildDeedResult({ totalShoto: total, share, shareArea: area, chain: decomp }, locale),
+      deed: buildDeedResult(
+        { totalShoto: total, share, shareArea: area, chain: decomp, rates },
+        locale,
+      ),
       parts,
       share,
       area,
       inputJson: JSON.stringify({ mode: "hishab", totalShoto: totalShoto.trim(), parts }),
     };
-  }, [errors, totalShoto, chain, locale]);
+  }, [errors, totalShoto, chain, locale, rates]);
 
   useEffect(() => {
     if (!result) return;

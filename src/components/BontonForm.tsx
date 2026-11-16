@@ -35,6 +35,7 @@ import { TonalButton } from "./TonalButton";
 import { OwnerRow } from "./OwnerRow";
 import { ShareBar } from "./ShareBar";
 import ResultCard from "./ResultCard";
+import { useRates } from "./RatesProvider";
 
 type BontonOwner = {
   readonly id: number;
@@ -97,6 +98,7 @@ const toNumber = (f: Fraction): number => Number(f.num) / Number(f.den);
 export function BontonForm({ prefill }: { readonly prefill?: string }) {
   const { colors } = useThemeColors();
   const locale = useLocale();
+  const { rates } = useRates();
   const params = useLocalSearchParams<{ prefill?: string }>();
   const init = useMemo(() => prefillToState(prefill ?? params.prefill), [prefill, params.prefill]);
 
@@ -151,10 +153,16 @@ export function BontonForm({ prefill }: { readonly prefill?: string }) {
   const shareDeed = useMemo<DeedResult | null>(() => {
     if (!total) return null;
     return buildDeedResult(
-      { totalShoto: total, share: sum, shareArea: mul(total, sum), chain: decomposeShare(sum) },
+      {
+        totalShoto: total,
+        share: sum,
+        shareArea: mul(total, sum),
+        chain: decomposeShare(sum),
+        rates,
+      },
       locale,
     );
-  }, [total, sum, locale]);
+  }, [total, sum, locale, rates]);
 
   // Per-owner deeds for the expanded cards (built only when needed).
   const deedById = useMemo(() => {
@@ -165,13 +173,19 @@ export function BontonForm({ prefill }: { readonly prefill?: string }) {
       map.set(
         r.owner.id,
         buildDeedResult(
-          { totalShoto: total, share: r.share, shareArea: r.area, chain: decomposeShare(r.share) },
+          {
+            totalShoto: total,
+            share: r.share,
+            shareArea: r.area,
+            chain: decomposeShare(r.share),
+            rates,
+          },
           locale,
         ),
       );
     }
     return map;
-  }, [total, rows, locale]);
+  }, [total, rows, locale, rates]);
 
   // Debounced auto-save: storage dedupes identical payloads and caps at 50.
   useEffect(() => {

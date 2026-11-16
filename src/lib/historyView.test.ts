@@ -166,6 +166,48 @@ describe("entryToRow", () => {
       expect(r.title).toBeTruthy();
     });
   });
+
+  describe("reverse row (mode reverse)", () => {
+    const reverseEntry = (): HistoryEntry => ({
+      id: 99,
+      mode: "reverse",
+      inputJson: JSON.stringify({
+        mode: "reverse",
+        area: "50",
+        unit: "shoto",
+        totalShoto: "100",
+      }),
+      resultJson: JSON.stringify({
+        share: { num: "1", den: "2" },
+        area: { num: "50", den: "1" },
+      }),
+      createdAt: 1_700_000_000_000,
+    });
+
+    it("renders share chain title and ratio · area subtitle (bn)", () => {
+      const r = entryToRow(reverseEntry(), "bn");
+      expect(r.title).toBe("৮ আনা");
+      expect(r.subtitle.startsWith("১/২ · ৫০.০০")).toBe(true);
+    });
+
+    it("renders share chain title and ratio · area subtitle (en)", () => {
+      const r = entryToRow(reverseEntry(), "en");
+      expect(r.title).toBe("8 Ana");
+      expect(r.subtitle).toBe("1/2 · 50.00 Shoto");
+    });
+
+    it("falls back for malformed reverse input JSON", () => {
+      const broken: HistoryEntry = {
+        id: 1,
+        mode: "reverse",
+        inputJson: "not json",
+        resultJson: "{}",
+        createdAt: 0,
+      };
+      const r = entryToRow(broken, "bn");
+      expect(r.title).toBeTruthy();
+    });
+  });
 });
 
 describe("formatEntryDate", () => {

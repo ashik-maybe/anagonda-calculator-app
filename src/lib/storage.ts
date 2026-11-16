@@ -33,7 +33,8 @@ export function findDuplicate(
 
 // ---- native layer (not unit-tested in bun) ----
 let db: SQLite.SQLiteDatabase | null = null;
-function getDb(): SQLite.SQLiteDatabase {
+/** Shared connection for sibling stores (rates). Creates history table on first use. */
+export function getDb(): SQLite.SQLiteDatabase {
   if (!db) {
     db = SQLite.openDatabaseSync("anagonda.db");
     db.execSync(

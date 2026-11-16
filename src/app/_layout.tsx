@@ -4,6 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { I18nProvider } from "../lib/i18n";
 import { useAppFonts } from "../lib/fonts";
 import { useThemeColors } from "../constants/theme";
+import { RatesProvider } from "../components/RatesProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,14 +24,16 @@ export default function RootLayout() {
 
   return (
     <I18nProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-      </Stack>
+      <RatesProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </RatesProvider>
     </I18nProvider>
   );
 }
