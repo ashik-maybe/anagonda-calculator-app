@@ -96,15 +96,17 @@ export default function ConvertScreen() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={90}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={0}
     >
       <ScrollView
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{ padding: spacing[3], paddingBottom: spacing[5], gap: spacing[3] }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={[styles.title, { color: colors.onSurface }]}>{t("convert_title")}</Text>
+        <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
+          {t("convert_hint")}
+        </Text>
 
         <View style={styles.inputRow}>
           <View style={{ flex: 1 }}>
@@ -282,6 +284,10 @@ export default function ConvertScreen() {
 
 const styles = StyleSheet.create({
   title: { fontFamily: typography.fonts.bengali, fontSize: 20, fontWeight: "700" },
+  subtitle: {
+    fontFamily: typography.fonts.bengali,
+    fontSize: typography.sizes[1],
+  },
   inputRow: { flexDirection: "row", alignItems: "center", gap: spacing[2] },
   iconButton: {
     width: 48,

@@ -126,7 +126,7 @@ function makeStyles(colors: ReturnType<typeof useThemeColors>["colors"]) {
       fontSize: typography.sizes[1],
       fontWeight: "600",
     },
-    row: { flexDirection: "row", gap: spacing[1] },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: spacing[1] },
     chip: {
       alignItems: "center",
       backgroundColor: colors.surfaceVariant,

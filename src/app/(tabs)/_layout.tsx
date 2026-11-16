@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { ArrowLeftRight, Home, MoreHorizontal, Ruler } from "lucide-react-native";
+import { ArrowLeftRight, Calculator, MoreHorizontal, Ruler } from "lucide-react-native";
 import { t, useLocale } from "../../lib/i18n";
 import { useThemeColors } from "../../constants/theme";
 
@@ -23,7 +23,7 @@ export default function TabsLayout() {
         name="hissa"
         options={{
           title: t("tab_hissa"),
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Calculator color={color} size={size} />,
         }}
       />
       <Tabs.Screen

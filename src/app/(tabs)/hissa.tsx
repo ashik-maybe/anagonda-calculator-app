@@ -96,8 +96,8 @@ export default function HishabScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={90}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={0}
       style={{ flex: 1 }}
     >
       <View style={{ backgroundColor: colors.background, flex: 1 }}>

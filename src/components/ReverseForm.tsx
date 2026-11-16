@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Calculator } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../constants/theme";
@@ -126,136 +126,130 @@ export function ReverseForm({ prefill }: Props) {
   const [savedNote, setSavedNote] = useState(false);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={90}
-      style={{ flex: 1 }}
+    <ScrollView
+      style={{ backgroundColor: colors.background }}
+      contentContainerStyle={{
+        padding: spacing[3],
+        paddingBottom: spacing[5],
+        gap: spacing[3],
+      }}
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView
-        style={{ backgroundColor: colors.background }}
-        contentContainerStyle={{
-          padding: spacing[3],
-          paddingBottom: spacing[5],
-          gap: spacing[3],
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <InputCard
-          label={t("area_label")}
-          value={area}
-          onChangeText={setArea}
-          error={areaError}
-          keyboardType="decimal-pad"
-          placeholder={locale === "bn" ? "০.০০" : "0.00"}
-          accessibilityHint={t("area_label")}
-        />
+      <InputCard
+        label={t("area_label")}
+        value={area}
+        onChangeText={setArea}
+        error={areaError}
+        keyboardType="decimal-pad"
+        placeholder={locale === "bn" ? "০.০০" : "0.00"}
+        accessibilityHint={t("area_label")}
+      />
 
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
-          {absoluteUnitIds.map((id) => {
-            const selected = id === unit;
-            return (
-              <Pressable
-                key={id}
-                accessibilityRole="button"
-                accessibilityLabel={t(`unit_${id}`)}
-                accessibilityState={{ selected }}
-                onPress={() => {
-                  setUnit(id);
-                  hapticTick();
-                }}
-                style={{
-                  minHeight: 48,
-                  paddingHorizontal: spacing[3],
-                  paddingVertical: spacing[1],
-                  borderRadius: radius.full,
-                  borderWidth: 1,
-                  borderColor: selected ? colors.primary : colors.outlineVariant,
-                  backgroundColor: selected ? colors.primaryContainer : "transparent",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
-                    fontFamily: typography.fonts.bengali,
-                    fontSize: typography.sizes[1],
-                    fontWeight: selected ? "600" : "400",
-                  }}
-                >
-                  {t(`unit_${id}`)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <InputCard
-          label={t("total_shoto")}
-          value={totalShoto}
-          onChangeText={setTotalShoto}
-          error={totalError}
-          keyboardType="decimal-pad"
-          placeholder={locale === "bn" ? "০.০০" : "0.00"}
-          accessibilityHint={t("total_shoto")}
-        />
-
-        {deed ? (
-          <>
-            {savedNote ? (
-              <Text
-                accessibilityLiveRegion="polite"
-                style={{
-                  color: colors.success,
-                  fontSize: 13,
-                  fontWeight: "600",
-                  textAlign: "center",
-                  fontFamily: typography.fonts.bengali,
-                }}
-              >
-                {t("history_saved")}
-              </Text>
-            ) : null}
-            <ResultCard deed={deed} />
-            {isCustom ? (
-              <Text
-                style={{
-                  color: colors.onSurfaceVariant,
-                  fontSize: 12,
-                  textAlign: "center",
-                  fontFamily: typography.fonts.bengali,
-                }}
-              >
-                {t("rates_badge")}
-              </Text>
-            ) : null}
-          </>
-        ) : (
-          <View
-            style={{
-              borderWidth: 1,
-              borderStyle: "dashed",
-              borderColor: colors.outlineVariant,
-              borderRadius: radius.md,
-              paddingVertical: spacing[5],
-              alignItems: "center",
-              gap: spacing[2],
-            }}
-          >
-            <Calculator color={colors.onSurfaceVariant} size={28} />
-            <Text
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
+        {absoluteUnitIds.map((id) => {
+          const selected = id === unit;
+          return (
+            <Pressable
+              key={id}
+              accessibilityRole="button"
+              accessibilityLabel={t(`unit_${id}`)}
+              accessibilityState={{ selected }}
+              onPress={() => {
+                setUnit(id);
+                hapticTick();
+              }}
               style={{
-                color: colors.onSurfaceVariant,
-                fontSize: 14,
+                minHeight: 48,
+                paddingHorizontal: spacing[3],
+                paddingVertical: spacing[1],
+                borderRadius: radius.full,
+                borderWidth: 1,
+                borderColor: selected ? colors.primary : colors.outlineVariant,
+                backgroundColor: selected ? colors.primaryContainer : "transparent",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                  fontFamily: typography.fonts.bengali,
+                  fontSize: typography.sizes[1],
+                  fontWeight: selected ? "600" : "400",
+                }}
+              >
+                {t(`unit_${id}`)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <InputCard
+        label={t("total_shoto")}
+        value={totalShoto}
+        onChangeText={setTotalShoto}
+        error={totalError}
+        keyboardType="decimal-pad"
+        placeholder={locale === "bn" ? "০.০০" : "0.00"}
+        accessibilityHint={t("total_shoto")}
+      />
+
+      {deed ? (
+        <>
+          {savedNote ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              style={{
+                color: colors.success,
+                fontSize: 13,
+                fontWeight: "600",
                 textAlign: "center",
                 fontFamily: typography.fonts.bengali,
               }}
             >
-              {t("reverse_empty_hint")}
+              {t("history_saved")}
             </Text>
-          </View>
-        )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+          ) : null}
+          <ResultCard deed={deed} />
+          {isCustom ? (
+            <Text
+              style={{
+                color: colors.onSurfaceVariant,
+                fontSize: 12,
+                textAlign: "center",
+                fontFamily: typography.fonts.bengali,
+              }}
+            >
+              {t("rates_badge")}
+            </Text>
+          ) : null}
+        </>
+      ) : (
+        <View
+          style={{
+            borderWidth: 1,
+            borderStyle: "dashed",
+            borderColor: colors.outlineVariant,
+            borderRadius: radius.md,
+            paddingVertical: spacing[5],
+            alignItems: "center",
+            gap: spacing[2],
+          }}
+        >
+          <Calculator color={colors.onSurfaceVariant} size={28} />
+          <Text
+            style={{
+              color: colors.onSurfaceVariant,
+              fontSize: 14,
+              textAlign: "center",
+              fontFamily: typography.fonts.bengali,
+            }}
+          >
+            {t("reverse_empty_hint")}
+          </Text>
+        </View>
+      )}
+    </ScrollView>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, Share, Text, View } from "react-native";
+import { ScrollView, Share, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Check, CircleAlert } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../constants/theme";
@@ -274,182 +274,176 @@ export function BontonForm({ prefill }: { readonly prefill?: string }) {
         : { borderColor: colors.outlineVariant, borderWidth: 1 };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={90}
-      style={{ flex: 1 }}
+    <ScrollView
+      style={{ backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing[3], paddingBottom: spacing[5], gap: spacing[3] }}
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView
-        style={{ backgroundColor: colors.background }}
-        contentContainerStyle={{ padding: spacing[3], paddingBottom: spacing[5], gap: spacing[3] }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <InputCard
-          label={t("total_shoto")}
-          value={totalShoto}
-          onChangeText={setTotalShoto}
-          error={totalError ? t(totalError) : null}
-          keyboardType="decimal-pad"
-          placeholder="0.00"
-          accessibilityHint={t("total_shoto")}
-        />
+      <InputCard
+        label={t("total_shoto")}
+        value={totalShoto}
+        onChangeText={setTotalShoto}
+        error={totalError ? t(totalError) : null}
+        keyboardType="decimal-pad"
+        placeholder="0.00"
+        accessibilityHint={t("total_shoto")}
+      />
 
-        {rows.map((row) => {
-          const o = row.owner;
-          const chainErrors = validateChain(o.parts);
-          const partErrors = Object.fromEntries(
-            Object.entries(chainErrors).map(([k, v]) => [k, v ? t(v) : null]),
-          );
-          const shareText = formatChain(decomposeShare(row.share), labels, locale);
-          const areaText = row.area ? formatLand(row.area, 2, locale) : "0.00";
-          const barState = cmp(row.share, ONE) > 0 ? "over" : isZero(row.share) ? "under" : "ok";
-          const deed = deedById.get(o.id) ?? null;
-          return (
-            <OwnerRow
-              key={o.id}
-              areaText={`${areaText} ${t("unit_shoto")}`}
-              barState={barState}
-              expanded={Boolean(expanded[o.id])}
-              expandLabel={t("owners")}
-              fractionOfWhole={toNumber(row.share)}
-              labels={labels}
-              locale={locale}
-              name={o.name}
-              nameError={null}
-              namePlaceholder={t("owner_name")}
-              onPartChange={setPart(o.id)}
-              onNameChange={setName(o.id)}
-              onRemove={() => removeOwner(o.id)}
-              onToggleExpand={() => setExpanded((prev) => ({ ...prev, [o.id]: !prev[o.id] }))}
-              partErrors={partErrors}
-              parts={o.parts}
-              removeLabel={t("history_delete")}
-              shareText={shareText}
-            >
-              {deed ? <ResultCard deed={deed} /> : null}
-            </OwnerRow>
-          );
-        })}
-
-        {owners.length === 0 ? (
-          <View
-            style={{
-              borderWidth: 1,
-              borderStyle: "dashed",
-              borderColor: colors.outlineVariant,
-              borderRadius: radius.md,
-              paddingVertical: spacing[4],
-              alignItems: "center",
-              gap: spacing[2],
-            }}
+      {rows.map((row) => {
+        const o = row.owner;
+        const chainErrors = validateChain(o.parts);
+        const partErrors = Object.fromEntries(
+          Object.entries(chainErrors).map(([k, v]) => [k, v ? t(v) : null]),
+        );
+        const shareText = formatChain(decomposeShare(row.share), labels, locale);
+        const areaText = row.area ? formatLand(row.area, 2, locale) : "0.00";
+        const barState = cmp(row.share, ONE) > 0 ? "over" : isZero(row.share) ? "under" : "ok";
+        const deed = deedById.get(o.id) ?? null;
+        return (
+          <OwnerRow
+            key={o.id}
+            areaText={`${areaText} ${t("unit_shoto")}`}
+            barState={barState}
+            expanded={Boolean(expanded[o.id])}
+            expandLabel={t("owners")}
+            fractionOfWhole={toNumber(row.share)}
+            labels={labels}
+            locale={locale}
+            name={o.name}
+            nameError={null}
+            namePlaceholder={t("owner_name")}
+            onPartChange={setPart(o.id)}
+            onNameChange={setName(o.id)}
+            onRemove={() => removeOwner(o.id)}
+            onToggleExpand={() => setExpanded((prev) => ({ ...prev, [o.id]: !prev[o.id] }))}
+            partErrors={partErrors}
+            parts={o.parts}
+            removeLabel={t("history_delete")}
+            shareText={shareText}
           >
-            <Text
-              style={{
-                color: colors.onSurfaceVariant,
-                fontSize: 14,
-                fontFamily: typography.fonts.bengali,
-                textAlign: "center",
-              }}
-            >
-              {t("empty_hisab_hint")}
-            </Text>
-          </View>
-        ) : null}
+            {deed ? <ResultCard deed={deed} /> : null}
+          </OwnerRow>
+        );
+      })}
 
-        <TonalButton
-          label={t("add_owner")}
-          onPress={addOwner}
-          variant="tonal"
-          disabled={!canAdd}
-          accessibilityHint={t("owner_limit")}
-        />
-        {!canAdd ? (
+      {owners.length === 0 ? (
+        <View
+          style={{
+            borderWidth: 1,
+            borderStyle: "dashed",
+            borderColor: colors.outlineVariant,
+            borderRadius: radius.md,
+            paddingVertical: spacing[4],
+            alignItems: "center",
+            gap: spacing[2],
+          }}
+        >
           <Text
             style={{
               color: colors.onSurfaceVariant,
-              fontSize: 12,
-              textAlign: "center",
+              fontSize: 14,
               fontFamily: typography.fonts.bengali,
+              textAlign: "center",
             }}
           >
-            {t("owner_limit")}
+            {t("empty_hisab_hint")}
           </Text>
-        ) : null}
+        </View>
+      ) : null}
 
-        {owners.length > 0 ? (
-          <View
-            style={{
-              backgroundColor: colors.surfaceVariant,
-              borderRadius: radius.md,
-              padding: spacing[3],
-              gap: spacing[2],
-              ...footerStyle,
-            }}
-          >
-            <ShareBar
-              accessibilityLabel={t("sum_ok")}
-              accessibilityValue={sumChainText}
-              fractionOfWhole={toNumber(sum)}
-              state={state === "equal" ? "ok" : state}
-            />
-            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
-              {state === "equal" ? (
-                <Check color={colors.success} size={18} />
-              ) : state === "over" ? (
-                <CircleAlert color={colors.error} size={18} />
-              ) : null}
-              <Text
-                style={{
-                  color:
-                    state === "over"
-                      ? colors.error
-                      : state === "equal"
-                        ? colors.success
-                        : colors.onSurfaceVariant,
-                  fontSize: 13,
-                  fontWeight: "600",
-                  fontFamily: typography.fonts.bengali,
-                }}
-              >
-                {state === "equal"
-                  ? t("sum_ok")
-                  : state === "over"
-                    ? t("over_cap")
-                    : `${t("sum_remainder")}: ${remainderText}`}
-              </Text>
-              <Text
-                style={{
-                  color: colors.onSurfaceVariant,
-                  fontSize: 12,
-                  fontFamily: typography.fonts.bengali,
-                }}
-              >
-                {sumChainText}
-              </Text>
-            </View>
-          </View>
-        ) : null}
+      <TonalButton
+        label={t("add_owner")}
+        onPress={addOwner}
+        variant="tonal"
+        disabled={!canAdd}
+        accessibilityHint={t("owner_limit")}
+      />
+      {!canAdd ? (
+        <Text
+          style={{
+            color: colors.onSurfaceVariant,
+            fontSize: 12,
+            textAlign: "center",
+            fontFamily: typography.fonts.bengali,
+          }}
+        >
+          {t("owner_limit")}
+        </Text>
+      ) : null}
 
-        {shareDeed ? (
-          <>
-            {savedNote ? (
-              <Text
-                accessibilityLiveRegion="polite"
-                style={{
-                  color: colors.success,
-                  fontSize: 13,
-                  fontWeight: "600",
-                  textAlign: "center",
-                }}
-              >
-                {t("history_saved")}
-              </Text>
+      {owners.length > 0 ? (
+        <View
+          style={{
+            backgroundColor: colors.surfaceVariant,
+            borderRadius: radius.md,
+            padding: spacing[3],
+            gap: spacing[2],
+            ...footerStyle,
+          }}
+        >
+          <ShareBar
+            accessibilityLabel={t("sum_ok")}
+            accessibilityValue={sumChainText}
+            fractionOfWhole={toNumber(sum)}
+            state={state === "equal" ? "ok" : state}
+          />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
+            {state === "equal" ? (
+              <Check color={colors.success} size={18} />
+            ) : state === "over" ? (
+              <CircleAlert color={colors.error} size={18} />
             ) : null}
-            <ResultCard deed={shareDeed} />
-            <TonalButton label={t("share")} onPress={() => void onShare()} variant="filled" />
-          </>
-        ) : null}
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <Text
+              style={{
+                color:
+                  state === "over"
+                    ? colors.error
+                    : state === "equal"
+                      ? colors.success
+                      : colors.onSurfaceVariant,
+                fontSize: 13,
+                fontWeight: "600",
+                fontFamily: typography.fonts.bengali,
+              }}
+            >
+              {state === "equal"
+                ? t("sum_ok")
+                : state === "over"
+                  ? t("over_cap")
+                  : `${t("sum_remainder")}: ${remainderText}`}
+            </Text>
+            <Text
+              style={{
+                color: colors.onSurfaceVariant,
+                fontSize: 12,
+                fontFamily: typography.fonts.bengali,
+              }}
+            >
+              {sumChainText}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {shareDeed ? (
+        <>
+          {savedNote ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              style={{
+                color: colors.success,
+                fontSize: 13,
+                fontWeight: "600",
+                textAlign: "center",
+              }}
+            >
+              {t("history_saved")}
+            </Text>
+          ) : null}
+          <ResultCard deed={shareDeed} />
+          <TonalButton label={t("share")} onPress={() => void onShare()} variant="filled" />
+        </>
+      ) : null}
+    </ScrollView>
   );
 }

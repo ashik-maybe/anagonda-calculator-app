@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Calculator } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../constants/theme";
@@ -238,345 +238,102 @@ export function HisabForm({ prefill }: Props) {
   const localeNumPlaceholder = locale === "bn" ? "০.০০" : "0.00";
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={80}
+    <ScrollView
+      style={{ backgroundColor: colors.background, flex: 1 }}
+      contentContainerStyle={{
+        padding: spacing[3],
+        paddingBottom: spacing[5],
+        gap: spacing[3],
+      }}
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView
-        style={{ backgroundColor: colors.background, flex: 1 }}
-        contentContainerStyle={{
-          padding: spacing[3],
-          paddingBottom: spacing[5],
-          gap: spacing[3],
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* 0 — Compact live answer bar (kept visible while tapping glyphs) */}
-        {result ? (
-          <View
-            style={{
-              backgroundColor: colors.surfaceVariant,
-              borderRadius: radius.md,
-              padding: spacing[2],
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: spacing[2],
-            }}
-          >
-            <Text
-              style={{
-                color: colors.primary,
-                fontFamily: typography.fonts.bengali,
-                fontSize: typography.sizes[2],
-                fontWeight: "700",
-                flex: 1,
-              }}
-              numberOfLines={1}
-            >
-              {result.chainText}
-            </Text>
-            {result.deed ? (
-              <Text
-                style={{
-                  color: colors.onSurface,
-                  fontFamily: typography.fonts.display,
-                  fontSize: typography.sizes[3],
-                  fontWeight: "700",
-                }}
-              >
-                {result.deed.areaText}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
-
-        {/* 1 — Deed glyph strip, above the fields. Tap to set ana; typing ana highlights it. */}
-        <GlyphKeypad
-          onAna={(n) => setChain((prev) => ({ ...prev, ana: String(n) }))}
-          onKora={(n) => setChain((prev) => ({ ...prev, kora: String(n) }))}
-          onKranti={(n) => setChain((prev) => ({ ...prev, kranti: String(n) }))}
-          selectedAna={selectedAna}
-          selectedKora={selectedKora}
-          selectedKranti={selectedKranti}
-          disabled={percentActive}
-        />
-
-        {/* 2 — Ana chain fields (live-linked to the glyph strip) */}
+      {/* 0 — Compact live answer bar (kept visible while tapping glyphs) */}
+      {result ? (
         <View
-          pointerEvents={percentActive ? "none" : "auto"}
-          accessibilityElementsHidden={percentActive}
-          importantForAccessibility={percentActive ? "no-hide-descendants" : "auto"}
-          style={{ gap: spacing[2], opacity: percentActive ? 0.4 : 1 }}
+          style={{
+            backgroundColor: colors.surfaceVariant,
+            borderRadius: radius.md,
+            padding: spacing[2],
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: spacing[2],
+          }}
         >
-          {CHAIN_KEYS.map((key) => (
-            <Stepper
-              key={key}
-              label={t(key)}
-              value={chain[key]}
-              onChange={setPart(key)}
-              error={chainError(key)}
-            />
-          ))}
-        </View>
-
-        {/* 3 — Percent shortcut: collapsible; drives the chain when open */}
-        {!percentOpen ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t("percent_label")}
-            onPress={() => setPercentOpen(true)}
-            style={({ pressed }) => [
-              {
-                minHeight: 44,
-                borderRadius: radius.full,
-                borderWidth: 1,
-                borderColor: colors.outlineVariant,
-                backgroundColor: colors.surfaceVariant,
-                alignItems: "center",
-                justifyContent: "center",
-                paddingHorizontal: spacing[3],
-              },
-              pressed && { backgroundColor: colors.surface },
-            ]}
-          >
-            <Text
-              style={{
-                color: colors.onSurfaceVariant,
-                fontFamily: typography.fonts.bengali,
-                fontSize: typography.sizes[1],
-                fontWeight: "600",
-              }}
-            >
-              {t("percent_label")} · {t("percent_note")}
-            </Text>
-          </Pressable>
-        ) : (
-          <>
-            <InputCard
-              label={t("percent_label")}
-              value={percent}
-              onChangeText={setPercent}
-              error={percentInvalid ? t("err_positive") : null}
-              keyboardType="decimal-pad"
-              placeholder={locale === "bn" ? "৫০" : "50"}
-              accessibilityHint={t("percent_label")}
-            />
-            {percentActive ? (
-              <Text
-                accessibilityLiveRegion="polite"
-                style={{
-                  color: colors.warn,
-                  fontFamily: typography.fonts.bengali,
-                  fontSize: typography.sizes[0],
-                  textAlign: "center",
-                }}
-              >
-                {t("percent_note")}
-              </Text>
-            ) : null}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t("history_clear")}
-              onPress={() => {
-                setPercent("");
-                setPercentOpen(false);
-              }}
-              style={({ pressed }) => [
-                { alignSelf: "flex-end", padding: spacing[1] },
-                pressed && { opacity: 0.6 },
-              ]}
-            >
-              <Text style={{ color: colors.onSurfaceVariant, fontSize: 13 }}>×</Text>
-            </Pressable>
-          </>
-        )}
-
-        {/* 4 — Optional total land, any unit; converted to shoto exactly */}
-        <InputCard
-          label={t("total_optional")}
-          value={totalRaw}
-          onChangeText={setTotalRaw}
-          error={totalInvalid ? t("err_positive") : null}
-          keyboardType="decimal-pad"
-          placeholder={localeNumPlaceholder}
-          accessibilityHint={t("total_optional")}
-        />
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
-          {TOTAL_UNITS.map((id) => {
-            const selected = id === totalUnit;
-            return (
-              <Pressable
-                key={id}
-                accessibilityRole="button"
-                accessibilityLabel={t(`unit_${id}`)}
-                accessibilityState={{ selected }}
-                onPress={() => {
-                  setTotalUnit(id);
-                  hapticTick();
-                }}
-                style={{
-                  minHeight: 48,
-                  paddingHorizontal: spacing[3],
-                  paddingVertical: spacing[1],
-                  borderRadius: radius.full,
-                  borderWidth: 1,
-                  borderColor: selected ? colors.primary : colors.outlineVariant,
-                  backgroundColor: selected ? colors.primaryContainer : "transparent",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
-                    fontFamily: typography.fonts.bengali,
-                    fontSize: typography.sizes[1],
-                    fontWeight: selected ? "600" : "400",
-                  }}
-                >
-                  {t(`unit_${id}`)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* 5 — Live answer card (no button) */}
-        {result ? (
-          <>
-            {savedNote ? (
-              <Text
-                accessibilityLiveRegion="polite"
-                style={{
-                  color: colors.success,
-                  fontSize: 13,
-                  fontWeight: "600",
-                  textAlign: "center",
-                }}
-              >
-                {t("history_saved")}
-              </Text>
-            ) : null}
-            {result.deed ? (
-              <ResultCard deed={result.deed} />
-            ) : (
-              <View
-                accessibilityRole="summary"
-                accessibilityLabel={`${t("result")}: ${result.chainText}, ${result.ratioText} ${t("ratio_share")}, ${result.percentText}%`}
-                style={{
-                  backgroundColor: colors.surface,
-                  borderColor: colors.outlineVariant,
-                  borderWidth: 1,
-                  borderRadius: radius.lg,
-                  padding: spacing[4],
-                  gap: spacing[2],
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: colors.onSurfaceVariant,
-                    fontSize: 12,
-                    fontWeight: "600",
-                    letterSpacing: 1,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {t("result")}
-                </Text>
-                <Text
-                  style={{
-                    color: colors.primary,
-                    fontSize: 28,
-                    lineHeight: 36,
-                    fontWeight: "700",
-                    textAlign: "center",
-                    fontFamily: typography.fonts.bengali,
-                  }}
-                >
-                  {result.chainText}
-                </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "baseline",
-                    gap: spacing[4],
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: colors.onSurface,
-                      fontSize: 20,
-                      fontWeight: "600",
-                      fontFamily: typography.fonts.bengali,
-                    }}
-                  >
-                    {result.ratioText} {t("ratio_share")}
-                  </Text>
-                  <Text
-                    style={{
-                      color: colors.onSurface,
-                      fontSize: 20,
-                      fontWeight: "600",
-                      fontFamily: typography.fonts.bengali,
-                    }}
-                  >
-                    {result.percentText}%
-                  </Text>
-                </View>
-              </View>
-            )}
-          </>
-        ) : (
-          <View
+          <Text
             style={{
-              borderWidth: 1,
-              borderStyle: "dashed",
-              borderColor: colors.outlineVariant,
-              borderRadius: radius.md,
-              paddingVertical: spacing[5],
-              alignItems: "center",
-              gap: spacing[2],
+              color: colors.primary,
+              fontFamily: typography.fonts.bengali,
+              fontSize: typography.sizes[2],
+              fontWeight: "700",
+              flex: 1,
             }}
+            numberOfLines={1}
           >
-            <Calculator color={colors.onSurfaceVariant} size={28} />
+            {result.chainText}
+          </Text>
+          {result.deed ? (
             <Text
               style={{
-                color: colors.onSurfaceVariant,
-                fontSize: 14,
-                textAlign: "center",
-                fontFamily: typography.fonts.bengali,
+                color: colors.onSurface,
+                fontFamily: typography.fonts.display,
+                fontSize: typography.sizes[3],
+                fontWeight: "700",
               }}
             >
-              {t("empty_hisab_hint")}
+              {result.deed.areaText}
             </Text>
-          </View>
-        )}
+          ) : null}
+        </View>
+      ) : null}
 
-        {/* Reset */}
+      {/* 1 — Deed glyph strip, above the fields. Tap to set ana; typing ana highlights it. */}
+      <GlyphKeypad
+        onAna={(n) => setChain((prev) => ({ ...prev, ana: String(n) }))}
+        onKora={(n) => setChain((prev) => ({ ...prev, kora: String(n) }))}
+        onKranti={(n) => setChain((prev) => ({ ...prev, kranti: String(n) }))}
+        selectedAna={selectedAna}
+        selectedKora={selectedKora}
+        selectedKranti={selectedKranti}
+        disabled={percentActive}
+      />
+
+      {/* 2 — Ana chain fields (live-linked to the glyph strip) */}
+      <View
+        pointerEvents={percentActive ? "none" : "auto"}
+        accessibilityElementsHidden={percentActive}
+        importantForAccessibility={percentActive ? "no-hide-descendants" : "auto"}
+        style={{ gap: spacing[2], opacity: percentActive ? 0.4 : 1 }}
+      >
+        {CHAIN_KEYS.map((key) => (
+          <Stepper
+            key={key}
+            label={t(key)}
+            value={chain[key]}
+            onChange={setPart(key)}
+            error={chainError(key)}
+          />
+        ))}
+      </View>
+
+      {/* 3 — Percent shortcut: collapsible; drives the chain when open */}
+      {!percentOpen ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t("history_clear")}
-          onPress={() => {
-            setTotalRaw("");
-            setPercent("");
-            setPercentOpen(false);
-            setChain({ ana: "", gonda: "", kora: "", kranti: "", til: "" });
-            setTotalUnit("shoto");
-          }}
+          accessibilityLabel={t("percent_label")}
+          onPress={() => setPercentOpen(true)}
           style={({ pressed }) => [
             {
               minHeight: 44,
-              alignItems: "center",
-              justifyContent: "center",
               borderRadius: radius.full,
               borderWidth: 1,
               borderColor: colors.outlineVariant,
+              backgroundColor: colors.surfaceVariant,
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: spacing[3],
             },
-            pressed && { backgroundColor: colors.surfaceVariant },
+            pressed && { backgroundColor: colors.surface },
           ]}
         >
           <Text
@@ -587,10 +344,247 @@ export function HisabForm({ prefill }: Props) {
               fontWeight: "600",
             }}
           >
-            পরিষ্কার করুন
+            {t("percent_label")} · {t("percent_note")}
           </Text>
         </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      ) : (
+        <>
+          <InputCard
+            label={t("percent_label")}
+            value={percent}
+            onChangeText={setPercent}
+            error={percentInvalid ? t("err_positive") : null}
+            keyboardType="decimal-pad"
+            placeholder={locale === "bn" ? "৫০" : "50"}
+            accessibilityHint={t("percent_label")}
+          />
+          {percentActive ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              style={{
+                color: colors.warn,
+                fontFamily: typography.fonts.bengali,
+                fontSize: typography.sizes[0],
+                textAlign: "center",
+              }}
+            >
+              {t("percent_note")}
+            </Text>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("history_clear")}
+            onPress={() => {
+              setPercent("");
+              setPercentOpen(false);
+            }}
+            style={({ pressed }) => [
+              { alignSelf: "flex-end", padding: spacing[1] },
+              pressed && { opacity: 0.6 },
+            ]}
+          >
+            <Text style={{ color: colors.onSurfaceVariant, fontSize: 13 }}>×</Text>
+          </Pressable>
+        </>
+      )}
+
+      {/* 4 — Optional total land, any unit; converted to shoto exactly */}
+      <InputCard
+        label={t("total_optional")}
+        value={totalRaw}
+        onChangeText={setTotalRaw}
+        error={totalInvalid ? t("err_positive") : null}
+        keyboardType="decimal-pad"
+        placeholder={localeNumPlaceholder}
+        accessibilityHint={t("total_optional")}
+      />
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
+        {TOTAL_UNITS.map((id) => {
+          const selected = id === totalUnit;
+          return (
+            <Pressable
+              key={id}
+              accessibilityRole="button"
+              accessibilityLabel={t(`unit_${id}`)}
+              accessibilityState={{ selected }}
+              onPress={() => {
+                setTotalUnit(id);
+                hapticTick();
+              }}
+              style={{
+                minHeight: 48,
+                paddingHorizontal: spacing[3],
+                paddingVertical: spacing[1],
+                borderRadius: radius.full,
+                borderWidth: 1,
+                borderColor: selected ? colors.primary : colors.outlineVariant,
+                backgroundColor: selected ? colors.primaryContainer : "transparent",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                  fontFamily: typography.fonts.bengali,
+                  fontSize: typography.sizes[1],
+                  fontWeight: selected ? "600" : "400",
+                }}
+              >
+                {t(`unit_${id}`)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {/* 5 — Live answer card (no button) */}
+      {result ? (
+        <>
+          {savedNote ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              style={{
+                color: colors.success,
+                fontSize: 13,
+                fontWeight: "600",
+                textAlign: "center",
+              }}
+            >
+              {t("history_saved")}
+            </Text>
+          ) : null}
+          {result.deed ? (
+            <ResultCard deed={result.deed} />
+          ) : (
+            <View
+              accessibilityRole="summary"
+              accessibilityLabel={`${t("result")}: ${result.chainText}, ${result.ratioText} ${t("ratio_share")}, ${result.percentText}%`}
+              style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.outlineVariant,
+                borderWidth: 1,
+                borderRadius: radius.lg,
+                padding: spacing[4],
+                gap: spacing[2],
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.onSurfaceVariant,
+                  fontSize: 12,
+                  fontWeight: "600",
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                }}
+              >
+                {t("result")}
+              </Text>
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: 28,
+                  lineHeight: 36,
+                  fontWeight: "700",
+                  textAlign: "center",
+                  fontFamily: typography.fonts.bengali,
+                }}
+              >
+                {result.chainText}
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "baseline",
+                  gap: spacing[4],
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.onSurface,
+                    fontSize: 20,
+                    fontWeight: "600",
+                    fontFamily: typography.fonts.bengali,
+                  }}
+                >
+                  {result.ratioText} {t("ratio_share")}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.onSurface,
+                    fontSize: 20,
+                    fontWeight: "600",
+                    fontFamily: typography.fonts.bengali,
+                  }}
+                >
+                  {result.percentText}%
+                </Text>
+              </View>
+            </View>
+          )}
+        </>
+      ) : (
+        <View
+          style={{
+            borderWidth: 1,
+            borderStyle: "dashed",
+            borderColor: colors.outlineVariant,
+            borderRadius: radius.md,
+            paddingVertical: spacing[5],
+            alignItems: "center",
+            gap: spacing[2],
+          }}
+        >
+          <Calculator color={colors.onSurfaceVariant} size={28} />
+          <Text
+            style={{
+              color: colors.onSurfaceVariant,
+              fontSize: 14,
+              textAlign: "center",
+              fontFamily: typography.fonts.bengali,
+            }}
+          >
+            {t("empty_hisab_hint")}
+          </Text>
+        </View>
+      )}
+
+      {/* Reset */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t("history_clear")}
+        onPress={() => {
+          setTotalRaw("");
+          setPercent("");
+          setPercentOpen(false);
+          setChain({ ana: "", gonda: "", kora: "", kranti: "", til: "" });
+          setTotalUnit("shoto");
+        }}
+        style={({ pressed }) => [
+          {
+            minHeight: 44,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: radius.full,
+            borderWidth: 1,
+            borderColor: colors.outlineVariant,
+          },
+          pressed && { backgroundColor: colors.surfaceVariant },
+        ]}
+      >
+        <Text
+          style={{
+            color: colors.onSurfaceVariant,
+            fontFamily: typography.fonts.bengali,
+            fontSize: typography.sizes[1],
+            fontWeight: "600",
+          }}
+        >
+          পরিষ্কার করুন
+        </Text>
+      </Pressable>
+    </ScrollView>
   );
 }
