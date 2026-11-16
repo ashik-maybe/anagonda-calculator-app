@@ -148,5 +148,7 @@
   "haptics": "Haptic feedback",
   "home_tip": "Good to know",
   "retry": "Retry",
-  "onboarding_replay": "Replay onboarding"
+  "onboarding_replay": "Replay onboarding",
+  "unit_hat": "Hat",
+  "unit_meter": "Meter"
 }

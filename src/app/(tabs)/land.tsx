@@ -15,7 +15,7 @@ import {
   type ShapeId,
   type ShapeResult,
 } from "../../lib/shapes";
-import { cmp, div, parseDecimal, ZERO, type Fraction } from "../../lib/fraction";
+import { cmp, div, frac, mul, parseDecimal, ZERO, type Fraction } from "../../lib/fraction";
 import { convert, unitFactor } from "../../lib/units";
 import { conversionStrip, formatLand } from "../../lib/deed";
 import { insertHistory } from "../../lib/storage";
@@ -167,6 +167,14 @@ function AreaCard({
 }
 
 const VALID_SHAPES = new Set<ShapeId>(SHAPE_ORDER);
+
+/** Linear factors to feet for the measurement input unit selector. */
+const INPUT_UNIT_FACTORS: Record<string, Fraction> = {
+  ft: frac(1),
+  hat: frac(3, 2), // 1 হাত = 1.5 ফুট
+  link: frac(33, 50), // 1 লিংক = 0.66 ফুট
+  meter: frac(1250, 381), // 1 মিটার = 1250/381 ফুট
+};
 const WORKSHEET_KEY = "worksheet:plots:v1";
 
 type StoredPlot = { id: string; shape: ShapeId; areaNum: string; areaDen: string };
@@ -216,6 +224,7 @@ export default function LandScreen() {
   const params = useLocalSearchParams<{ shape?: string; inputs?: string }>();
   const [shape, setShape] = useState<ShapeId>("quad");
   const [inputs, setInputs] = useState<Record<string, string>>({});
+  const [inputUnit, setInputUnit] = useState<string>("ft");
   const [plots, setPlots] = useState<Plot[]>([]);
   const [savedNote, setSavedNote] = useState(false);
   const nextPlotId = useRef(0);
@@ -266,15 +275,16 @@ export default function LandScreen() {
 
   const fields = shapeFields(shape);
 
+  const factor = INPUT_UNIT_FACTORS[inputUnit] ?? frac(1);
   const compute = useMemo<{ res: ShapeResult } | null>(() => {
     const parsed: Record<string, Fraction> = {};
     for (const field of fields) {
       const value = parseDecimal((inputs[field] ?? "").trim());
       if (value === null || cmp(value, ZERO) <= 0) return null;
-      parsed[field] = value;
+      parsed[field] = mul(value, factor);
     }
     return { res: shapeArea(shapeFromFields(shape, parsed)) };
-  }, [shape, fields, inputs]);
+  }, [shape, fields, inputs, factor]);
 
   /** Exact rational approximation of the live area; fine for 2dp displays. */
   const liveSqft = useMemo<Fraction | null>(() => {
@@ -411,6 +421,53 @@ export default function LandScreen() {
       >
         {t("unit_ft")}
       </Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
+        {(["ft", "hat", "link", "meter"] as const).map((u) => {
+          const selected = u === inputUnit;
+          const label =
+            u === "ft"
+              ? t("unit_ft")
+              : u === "hat"
+                ? t("unit_hat")
+                : u === "link"
+                  ? t("unit_link")
+                  : t("unit_meter");
+          return (
+            <Pressable
+              key={u}
+              accessibilityRole="button"
+              accessibilityLabel={label}
+              accessibilityState={{ selected }}
+              onPress={() => {
+                setInputUnit(u);
+                hapticTick();
+              }}
+              style={{
+                minHeight: 40,
+                paddingHorizontal: spacing[3],
+                paddingVertical: spacing[1],
+                borderRadius: radius.full,
+                borderWidth: 1,
+                borderColor: selected ? colors.primary : colors.outlineVariant,
+                backgroundColor: selected ? colors.primaryContainer : "transparent",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                  fontFamily: typography.fonts.bengali,
+                  fontSize: typography.sizes[1],
+                  fontWeight: selected ? "600" : "400",
+                }}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <View style={{ gap: spacing[2] }}>
         {fields.map((field) => {
           const raw = inputs[field] ?? "";
