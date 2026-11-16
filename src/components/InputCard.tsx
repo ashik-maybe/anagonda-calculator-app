@@ -7,7 +7,7 @@ type InputCardProps = {
   readonly value: string;
   readonly onChangeText: (value: string) => void;
   readonly error?: string | null;
-  readonly keyboardType?: "decimal-pad" | "number-pad";
+  readonly keyboardType?: "decimal-pad" | "number-pad" | "default";
   readonly placeholder?: string;
   readonly hint?: string;
   readonly accessibilityHint?: string;

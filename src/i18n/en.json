@@ -109,5 +109,9 @@
   "field_radius": "Radius",
   "unit_ft": "Feet",
   "live_area": "Area",
-  "porimap_empty_hint": "Enter the dimensions"
+  "porimap_empty_hint": "Enter the dimensions",
+  "glossary_empty": "No matching terms",
+  "regional_variance": "Unit values vary by region — the deed governs",
+  "about_on_device": "Everything stays on your device",
+  "share_app": "Share app"
 }

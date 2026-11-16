@@ -1,0 +1,124 @@
+{
+  "terms": [
+    {
+      "id": "cs_khatian",
+      "term_bn": "সিএস খতিয়ান",
+      "term_en": "CS khatian",
+      "code": "CS",
+      "def_bn": "সিএস (ক্যাডেস্ট্রাল সার্ভে) খতিয়ান — জমির প্রথম আধুনিক জরিপের রেকর্ড; এতে দাগ, খতিয়ান নম্বর ও মালিকানা লিপিবদ্ধ থাকে।",
+      "def_en": "CS khatian — the record from the Cadastral Survey, the earliest modern Bengal land survey; it lists the dag, khatian number and ownership."
+    },
+    {
+      "id": "sa_khatian",
+      "term_bn": "এসএ খতিয়ান",
+      "term_en": "SA khatian",
+      "code": "SA",
+      "def_bn": "এসএ (স্টেট অ্যাকুইজিশন) খতিয়ান — জমিদারি প্রথার বিলোপ ও রাষ্ট্রীয় অধিগ্রহণ পর্বের জরিপ রেকর্ড; সিএস রেকর্ডের ধারাবাহিক হালনাগাদ রূপ।",
+      "def_en": "SA khatian — the record from the State Acquisition settlement era after the zamindari system was abolished; a continuation of the CS record."
+    },
+    {
+      "id": "rs_khatian",
+      "term_bn": "আরএস খতিয়ান",
+      "term_en": "RS khatian",
+      "code": "RS",
+      "def_bn": "আরএস (রিভাইসনাল সার্ভে) খতিয়ান — সিএস/এসএ রেকর্ড সংশোধন ও হালনাগাদ জরিপের রেকর্ড।",
+      "def_en": "RS khatian — the Revisional Survey record, a correction and update of the CS/SA records."
+    },
+    {
+      "id": "bs_khatian",
+      "term_bn": "বিএস খতিয়ান",
+      "term_en": "BS khatian",
+      "code": "BS",
+      "def_bn": "বিএস (বাংলাদেশ সার্ভে) খতিয়ান — স্বাধীনতার পরের আধুনিক জরিপের সর্বশেষ রেকর্ড; বর্তমানে নামজারি ও রেজিস্ট্রির ভিত্তি।",
+      "def_en": "BS khatian — the Bangladesh Survey record, the latest modern settlement; the basis for current namjari and registration."
+    },
+    {
+      "id": "dag",
+      "term_bn": "দাগ",
+      "term_en": "Dag",
+      "code": "দাগ",
+      "def_bn": "দাগ — জরিপ মানচিত্রে প্লটের নম্বর; প্রতিটি দাগ মৌজার নির্দিষ্ট জমির খণ্ডকে চিহ্নিত করে।",
+      "def_en": "Dag — the plot number on a settlement map; each dag identifies a specific parcel of land within a mouja."
+    },
+    {
+      "id": "mouja",
+      "term_bn": "মৌজা",
+      "term_en": "Mouja",
+      "code": "মৌজা",
+      "def_bn": "মৌজা — ভূমি জরিপের ক্ষুদ্রতম ইউনিট; এক বা একাধিক দাগ নিয়ে একটি মৌজা গঠিত, এবং খতিয়ান মৌজা অনুযায়ী প্রস্তুত হয়।",
+      "def_en": "Mouja — the smallest land-survey unit; a mouja is made of one or more dags, and khatian records are prepared per mouja."
+    },
+    {
+      "id": "namjari",
+      "term_bn": "নামজারি",
+      "term_en": "Namjari",
+      "code": "নামজারি",
+      "def_bn": "নামজারি — ক্রয়, উত্তরাধিকার বা অন্য কারণে খতিয়ান রেকর্ডে নতুন মালিকের নাম নিবন্ধনের প্রক্রিয়া।",
+      "def_en": "Namjari — the process of registering a new owner's name in the khatian record after purchase, inheritance or other transfer."
+    },
+    {
+      "id": "deed",
+      "term_bn": "দলিল",
+      "term_en": "Deed",
+      "code": "দলিল",
+      "def_bn": "দলিল — জমির মালিকানা সৃষ্টি বা হস্তান্তরের আইনি দলিল; দলিলে যা লেখা আছে তাই চূড়ান্ত মান নির্ণয় করে।",
+      "def_en": "Deed — the legal instrument that creates or transfers land ownership; what the deed says governs the actual value."
+    },
+    {
+      "id": "khatian",
+      "term_bn": "খতিয়ান",
+      "term_en": "Khatian",
+      "code": "খতিয়ান",
+      "def_bn": "খতিয়ান — কোনো মৌজার জমির মালিকানা, দাগ, পরিমাণ ও ভাগ (আনা-গন্ডা) সম্বলিত সরকারি রেকর্ড; খতিয়ানে ভাগের যোগফল ১৬ আনা হয়।",
+      "def_en": "Khatian — the official record of a mouja listing ownership, dag, area and shares in ana-gonda; the shares in a khatian sum to 16 ana."
+    },
+    {
+      "id": "ana_glyphs",
+      "term_bn": "আনা চিহ্ন",
+      "term_en": "Ana glyphs",
+      "code": "⁄–১",
+      "def_bn": "আনা চিহ্নের সারণি — ১: ⁄ · ২: ৵ · ৩: ৶ · ৪: ৷ · ৫: ৷⁄ · ৬: ৷৵ · ৭: ৷৶ · ৮: ৷৷ · ৯: ৷৷⁄ · ১০: ৷৷৵ · ১১: ৷৷৶ · ১২: ৸ · ১৩: ৸⁄ · ১৪: ৸৵ · ১৫: ৸৶ · ১৬: সংখ্যা ১৬ (ষোল আনা)। দলিলে আনা সংখ্যায় নয়, এই চিহ্নগুলো দিয়ে লেখা হয়; গন্ডা ও তিলের কোনো চিহ্ন নেই।",
+      "def_en": "Ana glyph table — 1: ⁄ · 2: ৵ · 3: ৶ · 4: ৷ · 5: ৷⁄ · 6: ৷৵ · 7: ৷৶ · 8: ৷৷ · 9: ৷৷⁄ · 10: ৷৷৵ · 11: ৷৷৶ · 12: ৸ · 13: ৸⁄ · 14: ৸৵ · 15: ৸৶ · 16: the numeral 16 (ষোল আনা). Deeds write ana with these glyphs, not digits; gonda and til have no glyphs."
+    },
+    {
+      "id": "sym_kora",
+      "term_bn": "কড়া চিহ্ন",
+      "term_en": "Kora glyphs",
+      "code": "৷ ৷৷ ৸",
+      "def_bn": "কড়া চিহ্ন — ১ কড়া: ৷ · ২ কড়া: ৷৷ · ৩ কড়া: ৸; ৪ কড়া = ১ গন্ডা।",
+      "def_en": "Kora glyphs — 1 kora: ৷ · 2 kora: ৷৷ · 3 kora: ৸; 4 kora = 1 gonda."
+    },
+    {
+      "id": "sym_kranti",
+      "term_bn": "ক্রান্তি চিহ্ন",
+      "term_en": "Kranti glyphs",
+      "code": "৴ ৴৴",
+      "def_bn": "ক্রান্তি চিহ্ন — ১ ক্রান্তি: ৴ · ২ ক্রান্তি: ৴৴; ৩ ক্রান্তি = ১ কড়া।",
+      "def_en": "Kranti glyphs — 1 kranti: ৴ · 2 kranti: ৴৴; 3 kranti = 1 kora."
+    },
+    {
+      "id": "gonda_note",
+      "term_bn": "গন্ডা (সংখ্যায়)",
+      "term_en": "Gonda (numeric)",
+      "code": "২০ গন্ডা",
+      "def_bn": "গন্ডার কোনো চিহ্ন নেই — সংখ্যায় লেখা হয়; ২০ গন্ডা = ১ আনা, ১ গন্ডা = ৮৬৪ বর্গফুট।",
+      "def_en": "Gonda has no glyph — written numerically; 20 gonda = 1 ana; 1 gonda = 864 sq ft."
+    },
+    {
+      "id": "til_note",
+      "term_bn": "তিল (সংখ্যায়)",
+      "term_en": "Til (numeric)",
+      "code": "৪৮০০ তিল",
+      "def_bn": "তিলের কোনো চিহ্ন নেই — সংখ্যায় লেখা হয়; ২০ তিল = ১ ক্রান্তি, ১ আনা = ৪৮০০ তিল; জমির ক্ষুদ্রতম ভাগ।",
+      "def_en": "Til has no glyph — written numerically; 20 til = 1 kranti, 1 ana = 4,800 til; the smallest share unit."
+    },
+    {
+      "id": "sixteen_ana",
+      "term_bn": "ষোল আনা",
+      "term_en": "Sixteen ana",
+      "code": "১৬ আনা",
+      "def_bn": "খতিয়ানের পূর্ণ অংশ ১৬ আনা = ৪৮০০ তিল = ৩২০ গন্ডা = ১৭,২৮০ বর্গফুট (১ কানি); সকল ভাগের যোগফল ১৬ আনা হলে খতিয়ান সম্পূর্ণ।",
+      "def_en": "The whole of a khatian — 16 ana = 4,800 til = 320 gonda = 17,280 sq ft (1 kani); when the shares sum to 16 ana, the khatian is complete."
+    }
+  ]
+}

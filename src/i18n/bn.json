@@ -109,5 +109,9 @@
   "field_radius": "ব্যাসার্ধ",
   "unit_ft": "ফুট",
   "live_area": "ক্ষেত্রফল",
-  "porimap_empty_hint": "মাত্রা দিন"
+  "porimap_empty_hint": "মাত্রা দিন",
+  "glossary_empty": "কোনো ফলাফল নেই",
+  "regional_variance": "মানচিত্র ও অঞ্চলে একক পরিবর্তিত হতে পারে — দলিলই চূড়ান্ত",
+  "about_on_device": "সব তথ্য আপনার ডিভাইসেই",
+  "share_app": "অ্যাপ শেয়ার করুন"
 }

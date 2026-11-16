@@ -365,11 +365,22 @@ export default function PorimapScreen() {
         </View>
       )}
 
-      <TonalButton
-        label={t("rates")}
-        variant="outlined"
-        onPress={() => router.push("/more/rates")}
-      />
+      <View style={{ flexDirection: "row", gap: spacing[2] }}>
+        <View style={{ flex: 1 }}>
+          <TonalButton
+            label={t("encyclopedia")}
+            variant="outlined"
+            onPress={() => router.push("/more/encyclopedia")}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <TonalButton
+            label={t("rates")}
+            variant="outlined"
+            onPress={() => router.push("/more/rates")}
+          />
+        </View>
+      </View>
     </ScrollView>
   );
 }
