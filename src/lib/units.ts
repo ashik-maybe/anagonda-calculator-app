@@ -5,11 +5,14 @@ export type AbsoluteUnitId =
   | "sqft"
   | "shoto"
   | "katha"
+  | "chotak"
   | "bigha"
   | "acre"
   | "hectare"
   | "sqm"
   | "sqyard"
+  | "sqhat"
+  | "sqlink"
   | "kani"
   | "gonda"
   | "kora"
@@ -45,7 +48,9 @@ function parseStrict(s: string): Fraction {
 // Parse every base factor once at module load: a malformed units.json fails
 // fast here instead of on first use.
 const baseFactors = new Map<AbsoluteUnitId, Fraction>(
-  raw.absolute.map((row) => [row.id as AbsoluteUnitId, parseStrict(row.sqft)]),
+  raw.absolute
+    .filter((row) => typeof row.sqft === "string")
+    .map((row) => [row.id as AbsoluteUnitId, parseStrict(row.sqft as string)]),
 );
 
 export const CHAIN_FT: Fraction = parseStrict(raw.chain.ft);
@@ -56,8 +61,14 @@ export const GUNIA_SCALE_LINKS_PER_INCH: Readonly<Record<string, number>> =
   raw.gunia.scaleLinksPerInch;
 
 export function unitFactor(id: AbsoluteUnitId, rates: Rates = DEFAULT_RATES): Fraction {
-  const row = raw.absolute.find((r) => r.id === id);
+  const row = raw.absolute.find((r) => r.id === id) as
+    | { id: string; rateId?: string; divideBy?: number }
+    | undefined;
   if (!row) throw new RangeError("unitFactor: unknown unit id " + id);
+  if (row.divideBy) {
+    const baseId = row.rateId as AbsoluteUnitId;
+    return div(unitFactor(baseId, rates), frac(row.divideBy));
+  }
   if (row.rateId === "katha") return rates.kathaSqft;
   if (row.rateId === "bigha") return rates.bighaSqft;
   const factor = baseFactors.get(id);

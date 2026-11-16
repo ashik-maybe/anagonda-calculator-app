@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { eq, frac, mul, ONE } from "./fraction";
+import { div, eq, frac, mul, ONE } from "./fraction";
 import {
   absoluteUnitIds,
   CHAIN_FT,
@@ -16,7 +16,7 @@ import {
 
 describe("units", () => {
   test("every absolute row factor parses at import and yields a positive non-zero factor", () => {
-    expect(absoluteUnitIds.length).toBe(14);
+    expect(absoluteUnitIds.length).toBe(17);
     for (const id of absoluteUnitIds) {
       const f = unitFactor(id);
       expect(f.num > 0n).toBe(true);
@@ -87,5 +87,22 @@ describe("units", () => {
     expect(CHAIN_LINKS).toBe(100);
     expect(eq(GUNIA_LINKS_PER_MILE, frac(8000))).toBe(true);
     expect(GUNIA_SCALE_LINKS_PER_INCH).toEqual({ "16": 500, "32": 250, "64": 125, "80": 100 });
+  });
+});
+
+describe("units: new traditional units", () => {
+  test("chotak is katha/16", () => {
+    expect(eq(unitFactor("chotak"), div(unitFactor("katha"), frac(16)))).toBe(true);
+    expect(eq(mul(unitFactor("chotak"), frac(16)), unitFactor("katha"))).toBe(true);
+  });
+  test("sqhat = 9/4 sqft", () => {
+    expect(eq(unitFactor("sqhat"), frac(9, 4))).toBe(true);
+  });
+  test("sqlink = 1089/2500 sqft", () => {
+    expect(eq(unitFactor("sqlink"), frac(1089, 2500))).toBe(true);
+  });
+  test("chotak follows a custom katha rate", () => {
+    const rates = { kathaSqft: frac(800), bighaSqft: DEFAULT_RATES.bighaSqft };
+    expect(eq(unitFactor("chotak", rates), frac(50))).toBe(true);
   });
 });

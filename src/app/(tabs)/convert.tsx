@@ -25,6 +25,7 @@ type ConvertRow = { readonly unit: AbsoluteUnitId; readonly value: string };
 const TRADITIONAL_UNITS: readonly AbsoluteUnitId[] = [
   "shoto",
   "katha",
+  "chotak",
   "bigha",
   "acre",
   "kani",

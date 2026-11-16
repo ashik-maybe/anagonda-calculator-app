@@ -1,0 +1,70 @@
+import { Modal, Pressable, ScrollView } from "react-native";
+import glossary from "../data/glossary.json";
+import { useThemeColors, radius, spacing } from "../constants/theme";
+import { useLocale } from "../lib/i18n";
+import { BnText } from "./BnText";
+
+type Term = (typeof glossary.terms)[number];
+
+export type TermSheetProps = { termId: string | null; onClose: () => void };
+
+export function TermSheet({ termId, onClose }: TermSheetProps) {
+  const { colors } = useThemeColors();
+  const locale = useLocale();
+  const term = termId
+    ? (glossary.terms.find((t) => t.id === termId) as Term | undefined)
+    : undefined;
+  const closeLabel = locale === "bn" ? "বন্ধ করুন" : "Close";
+  return (
+    <Modal
+      visible={termId !== null && !!term}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <Pressable
+        style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" }}
+        onPress={onClose}
+      >
+        <Pressable
+          onPress={() => {}}
+          style={{
+            backgroundColor: colors.surface,
+            borderTopLeftRadius: radius.lg,
+            borderTopRightRadius: radius.lg,
+            padding: spacing[4],
+            gap: spacing[2],
+            maxHeight: "70%",
+          }}
+        >
+          {term ? (
+            <ScrollView contentContainerStyle={{ gap: spacing[2] }}>
+              <BnText variant="title" style={{ color: colors.onSurface }}>
+                {term.term_bn}
+              </BnText>
+              <BnText variant="caption" style={{ color: colors.onSurfaceVariant }}>
+                {term.term_en} · {term.code}
+              </BnText>
+              <BnText variant="body" style={{ color: colors.onSurface }}>
+                {term.def_bn}
+              </BnText>
+              <BnText variant="caption" style={{ color: colors.onSurfaceVariant }}>
+                {term.def_en}
+              </BnText>
+            </ScrollView>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={closeLabel}
+            onPress={onClose}
+            style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }}
+          >
+            <BnText variant="label" style={{ color: colors.primary }}>
+              {closeLabel}
+            </BnText>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
