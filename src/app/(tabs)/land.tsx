@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleAlert, Ruler, Trash2 } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
@@ -166,6 +167,47 @@ function AreaCard({
 }
 
 const VALID_SHAPES = new Set<ShapeId>(SHAPE_ORDER);
+const WORKSHEET_KEY = "worksheet:plots:v1";
+
+type StoredPlot = { id: string; shape: ShapeId; areaNum: string; areaDen: string };
+
+function serializePlots(plots: Plot[]): string {
+  return JSON.stringify(
+    plots.map((p) => ({
+      id: p.id,
+      shape: p.shape,
+      areaNum: p.areaSqft.num.toString(),
+      areaDen: p.areaSqft.den.toString(),
+    })),
+  );
+}
+
+function deserializePlots(raw: string): Plot[] {
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    const out: Plot[] = [];
+    for (const item of parsed) {
+      if (!item || typeof item !== "object") continue;
+      const o = item as Partial<StoredPlot>;
+      if (typeof o.id !== "string" || typeof o.shape !== "string") continue;
+      if (!VALID_SHAPES.has(o.shape as ShapeId)) continue;
+      if (typeof o.areaNum !== "string" || typeof o.areaDen !== "string") continue;
+      try {
+        out.push({
+          id: o.id,
+          shape: o.shape as ShapeId,
+          areaSqft: { num: BigInt(o.areaNum), den: BigInt(o.areaDen) },
+        });
+      } catch {
+        // skip malformed
+      }
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
 
 export default function LandScreen() {
   const { colors } = useThemeColors();
@@ -177,6 +219,33 @@ export default function LandScreen() {
   const [plots, setPlots] = useState<Plot[]>([]);
   const [savedNote, setSavedNote] = useState(false);
   const nextPlotId = useRef(0);
+  const [worksheetLoaded, setWorksheetLoaded] = useState(false);
+
+  // Restore persisted worksheet on first mount.
+  useEffect(() => {
+    let active = true;
+    AsyncStorage.getItem(WORKSHEET_KEY)
+      .then((raw) => {
+        if (!active) return;
+        if (raw) {
+          const restored = deserializePlots(raw);
+          if (restored.length > 0) setPlots(restored);
+        }
+        setWorksheetLoaded(true);
+      })
+      .catch(() => {
+        if (active) setWorksheetLoaded(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Persist worksheet whenever it changes (after initial load).
+  useEffect(() => {
+    if (!worksheetLoaded) return;
+    AsyncStorage.setItem(WORKSHEET_KEY, serializePlots(plots)).catch(() => undefined);
+  }, [plots, worksheetLoaded]);
 
   useEffect(() => {
     if (typeof params.shape !== "string" || typeof params.inputs !== "string") return;
@@ -261,6 +330,11 @@ export default function LandScreen() {
 
   const removePlot = (id: string) => {
     setPlots((prev) => prev.filter((plot) => plot.id !== id));
+    hapticTick();
+  };
+
+  const clearPlots = () => {
+    setPlots([]);
     hapticTick();
   };
 
@@ -506,6 +580,31 @@ export default function LandScreen() {
                 </Pressable>
               </View>
             ))}
+          </View>
+
+          <View style={{ alignItems: "flex-end" }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("history_clear")}
+              onPress={clearPlots}
+              style={({ pressed }) => ({
+                minHeight: 44,
+                paddingHorizontal: spacing[2],
+                justifyContent: "center",
+                opacity: pressed ? 0.6 : 1,
+              })}
+            >
+              <Text
+                style={{
+                  color: colors.error,
+                  fontSize: 13,
+                  fontWeight: "600",
+                  fontFamily: typography.fonts.bengali,
+                }}
+              >
+                {t("history_clear")}
+              </Text>
+            </Pressable>
           </View>
 
           <AreaCard heading={t("worksheet_total")} areaSqft={total} />

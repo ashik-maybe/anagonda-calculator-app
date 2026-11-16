@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   useThemeColors,
   getThemePreference,
@@ -25,6 +27,7 @@ function Card({ children }: { children: ReactNode }) {
 export default function SettingsScreen() {
   const { colors } = useThemeColors();
   const locale = useLocale();
+  const router = useRouter();
   // SegmentedControl does not subscribe to the theme store, so mirror it locally.
   const [theme, setTheme] = useState<ThemePreference>(() => getThemePreference());
   const [haptics, setHaptics] = useState<boolean>(() => hapticsEnabled());
@@ -82,6 +85,28 @@ export default function SettingsScreen() {
             accessibilityLabel={t("haptics")}
           />
         </View>
+      </Card>
+
+      <Card>
+        <Pressable
+          accessibilityRole="button"
+          onPress={async () => {
+            try {
+              await AsyncStorage.removeItem("onboarding:done");
+            } catch {
+              // ignore
+            }
+            router.replace("/onboarding");
+          }}
+          style={({ pressed }) => ({
+            minHeight: 48,
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <Text style={[styles.rowText, { textAlign: "center" }]}>{t("onboarding_replay")}</Text>
+        </Pressable>
       </Card>
     </ScrollView>
   );
