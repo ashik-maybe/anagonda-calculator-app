@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Svg, { Circle, Line, Path, Polygon, Rect } from "react-native-svg";
+import Svg, { Circle, Ellipse, Line, Path, Polygon, Rect } from "react-native-svg";
 import type { ShapeId } from "../lib/shapes";
 
 export type { ShapeId };
@@ -107,6 +107,60 @@ export const SHAPE_GLYPHS: Record<ShapeId, (p: GlyphProps) => ReactNode> = {
         y1={32}
         x2={40}
         y2={32}
+        stroke={color}
+        strokeWidth={2}
+        fill="none"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </Svg>
+  ),
+  rectangle: ({ size, color }) => (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Rect
+        x={8}
+        y={12}
+        width={32}
+        height={24}
+        stroke={color}
+        strokeWidth={2}
+        fill="none"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </Svg>
+  ),
+  parallelogram: ({ size, color }) => (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Polygon
+        points="14,12 42,12 34,36 6,36"
+        stroke={color}
+        strokeWidth={2}
+        fill="none"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </Svg>
+  ),
+  rhombus: ({ size, color }) => (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Polygon
+        points="24,6 42,24 24,42 6,24"
+        stroke={color}
+        strokeWidth={2}
+        fill="none"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </Svg>
+  ),
+  ellipse: ({ size, color }) => (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Ellipse
+        cx={24}
+        cy={24}
+        rx={18}
+        ry={12}
         stroke={color}
         strokeWidth={2}
         fill="none"

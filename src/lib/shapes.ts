@@ -39,7 +39,11 @@ export type ShapeSpec =
   | { readonly kind: "heron"; a: Fraction; b: Fraction; c: Fraction }
   | { readonly kind: "right"; a: Fraction; b: Fraction }
   | { readonly kind: "circle"; r: Fraction }
-  | { readonly kind: "semicircle"; r: Fraction };
+  | { readonly kind: "semicircle"; r: Fraction }
+  | { readonly kind: "rectangle"; l: Fraction; w: Fraction }
+  | { readonly kind: "parallelogram"; b: Fraction; h: Fraction }
+  | { readonly kind: "rhombus"; d1: Fraction; d2: Fraction }
+  | { readonly kind: "ellipse"; a: Fraction; b: Fraction };
 
 const HALF: Fraction = { num: 1n, den: 2n };
 
@@ -96,6 +100,26 @@ export function semicircleArea(r: Fraction): ShapeResult {
   return { ok: true, area: { kind: "pi", coefficient: mul(mul(r, r), HALF) } };
 }
 
+export function rectangleArea(l: Fraction, w: Fraction): ShapeResult {
+  if (!positive(l) || !positive(w)) return nonPositive();
+  return { ok: true, area: { kind: "exact", value: mul(l, w) } };
+}
+
+export function parallelogramArea(b: Fraction, h: Fraction): ShapeResult {
+  if (!positive(b) || !positive(h)) return nonPositive();
+  return { ok: true, area: { kind: "exact", value: mul(b, h) } };
+}
+
+export function rhombusArea(d1: Fraction, d2: Fraction): ShapeResult {
+  if (!positive(d1) || !positive(d2)) return nonPositive();
+  return { ok: true, area: { kind: "exact", value: mul(mul(d1, d2), HALF) } };
+}
+
+export function ellipseArea(a: Fraction, b: Fraction): ShapeResult {
+  if (!positive(a) || !positive(b)) return nonPositive();
+  return { ok: true, area: { kind: "pi", coefficient: mul(a, b) } };
+}
+
 export function shapeArea(s: ShapeSpec): ShapeResult {
   switch (s.kind) {
     case "quad":
@@ -112,6 +136,14 @@ export function shapeArea(s: ShapeSpec): ShapeResult {
       return circleArea(s.r);
     case "semicircle":
       return semicircleArea(s.r);
+    case "rectangle":
+      return rectangleArea(s.l, s.w);
+    case "parallelogram":
+      return parallelogramArea(s.b, s.h);
+    case "rhombus":
+      return rhombusArea(s.d1, s.d2);
+    case "ellipse":
+      return ellipseArea(s.a, s.b);
   }
 }
 
@@ -144,7 +176,11 @@ export type ShapeId =
   | "triangle"
   | "rightTriangle"
   | "circle"
-  | "semicircle";
+  | "semicircle"
+  | "rectangle"
+  | "parallelogram"
+  | "rhombus"
+  | "ellipse";
 
 /** Outline/picker order; shared by the shape picker and history rows. */
 export const SHAPE_ORDER: readonly ShapeId[] = [
@@ -155,6 +191,10 @@ export const SHAPE_ORDER: readonly ShapeId[] = [
   "rightTriangle",
   "circle",
   "semicircle",
+  "rectangle",
+  "parallelogram",
+  "rhombus",
+  "ellipse",
 ];
 
 export const SHAPE_FIELDS: Record<ShapeId, readonly string[]> = {
@@ -165,6 +205,10 @@ export const SHAPE_FIELDS: Record<ShapeId, readonly string[]> = {
   rightTriangle: ["base", "height"],
   circle: ["radius"],
   semicircle: ["radius"],
+  rectangle: ["length", "width"],
+  parallelogram: ["base", "height"],
+  rhombus: ["diag_1", "diag_2"],
+  ellipse: ["axis_a", "axis_b"],
 };
 
 /** Field ids the picker renders inputs for, per shape. */
@@ -228,5 +272,13 @@ export function shapeFromFields(shape: ShapeId, v: Record<string, Fraction>): Sh
       return { kind: "circle", r: required(v, "radius") };
     case "semicircle":
       return { kind: "semicircle", r: required(v, "radius") };
+    case "rectangle":
+      return { kind: "rectangle", l: required(v, "length"), w: required(v, "width") };
+    case "parallelogram":
+      return { kind: "parallelogram", b: required(v, "base"), h: required(v, "height") };
+    case "rhombus":
+      return { kind: "rhombus", d1: required(v, "diag_1"), d2: required(v, "diag_2") };
+    case "ellipse":
+      return { kind: "ellipse", a: required(v, "axis_a"), b: required(v, "axis_b") };
   }
 }

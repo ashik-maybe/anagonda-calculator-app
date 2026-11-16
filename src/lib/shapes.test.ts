@@ -152,7 +152,7 @@ describe("shapes", () => {
 });
 
 describe("shapeFromFields/SHAPE_ORDER", () => {
-  test("SHAPE_ORDER has all 7 ids in outline order", () => {
+  test("SHAPE_ORDER has all 11 ids in outline order", () => {
     expect(SHAPE_ORDER).toEqual([
       "quad",
       "square",
@@ -161,8 +161,12 @@ describe("shapeFromFields/SHAPE_ORDER", () => {
       "rightTriangle",
       "circle",
       "semicircle",
+      "rectangle",
+      "parallelogram",
+      "rhombus",
+      "ellipse",
     ]);
-    expect(SHAPE_ORDER.length).toBe(7);
+    expect(SHAPE_ORDER.length).toBe(11);
   });
 
   test("shapeFields exposes quad and triangle field ids", () => {
