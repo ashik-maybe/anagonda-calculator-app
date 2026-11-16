@@ -5,6 +5,7 @@ import { radius, spacing, typography, useThemeColors } from "../constants/theme"
 type HistoryRowProps = {
   readonly title: string;
   readonly subtitle: string;
+  readonly glyphText?: string;
   readonly meta: string;
   readonly onPress: () => void;
   readonly onDelete: () => void;
@@ -15,6 +16,7 @@ type HistoryRowProps = {
 export function HistoryRow({
   title,
   subtitle,
+  glyphText,
   meta,
   onPress,
   onDelete,
@@ -33,6 +35,7 @@ export function HistoryRow({
       <View style={styles.textColumn}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
+        {glyphText ? <Text style={styles.glyph}>{glyphText}</Text> : null}
         <Text style={styles.meta}>{meta}</Text>
       </View>
       <Pressable
@@ -73,6 +76,12 @@ function makeStyles(colors: ReturnType<typeof useThemeColors>["colors"]) {
       color: colors.onSurfaceVariant,
       fontFamily: typography.fonts.bengali,
       fontSize: 13,
+    },
+    glyph: {
+      color: colors.onSurfaceVariant,
+      fontFamily: typography.fonts.bengali,
+      fontSize: 12,
+      letterSpacing: 2,
     },
     meta: {
       color: colors.onSurfaceVariant,

@@ -1,3 +1,6 @@
+import bnDict from "../i18n/bn.json";
+import enDict from "../i18n/en.json";
+import { anaGlyph, koraGlyph, krantiGlyph } from "../data/glyphs";
 import { toBanglaDigits } from "./digits";
 import { frac, mul, div, sub, toRatioString, type Fraction } from "./fraction";
 import {
@@ -92,6 +95,36 @@ export type DigitLocale = "bn" | "en";
 
 const digitize = (n: number, locale: DigitLocale): string =>
   locale === "bn" ? toBanglaDigits(n) : String(n);
+
+const dicts = {
+  bn: bnDict as Record<string, string>,
+  en: enDict as Record<string, string>,
+};
+const localize = (locale: DigitLocale, key: string): string =>
+  dicts[locale][key] ?? dicts.en[key] ?? key;
+
+const digitsFor = (locale: DigitLocale, s: string): string =>
+  locale === "bn" ? toBanglaDigits(s) : s;
+
+/** Document-style glyph form (ana glyph + numeric gonda + kora/kranti glyphs + til number). */
+export function chainGlyphText(d: ChainDecomposition, locale: DigitLocale = "bn"): string {
+  const glyphParts: string[] = [];
+  const ag = anaGlyph(d.ana);
+  if (ag) glyphParts.push(ag);
+  else if (d.ana === 0) glyphParts.push(`${digitsFor(locale, "0")} ${localize(locale, "ana")}`);
+  if (d.gonda > 0)
+    glyphParts.push(`${digitsFor(locale, String(d.gonda))} ${localize(locale, "gonda")}`);
+  const kg = koraGlyph(d.kora);
+  if (kg) glyphParts.push(kg);
+  else if (d.kora > 0)
+    glyphParts.push(`${digitsFor(locale, String(d.kora))} ${localize(locale, "kora")}`);
+  const krg = krantiGlyph(d.kranti);
+  if (krg) glyphParts.push(krg);
+  else if (d.kranti > 0)
+    glyphParts.push(`${digitsFor(locale, String(d.kranti))} ${localize(locale, "kranti")}`);
+  if (d.til > 0) glyphParts.push(`${digitsFor(locale, String(d.til))} ${localize(locale, "til")}`);
+  return glyphParts.join(" ");
+}
 
 /**
  * Exact ana-chain display string, largest unit first, zero components

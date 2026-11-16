@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { ArrowLeftRight, MoreHorizontal, Ruler } from "lucide-react-native";
+import { ArrowLeftRight, Home, MoreHorizontal, Ruler } from "lucide-react-native";
 import { t, useLocale } from "../../lib/i18n";
 import { useThemeColors } from "../../constants/theme";
 

@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { CircleAlert, Ruler } from "lucide-react-native";
+import { CircleAlert, Ruler, Trash2 } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
 import {
@@ -19,6 +19,7 @@ import { convert, unitFactor } from "../../lib/units";
 import { conversionStrip, formatLand } from "../../lib/deed";
 import { insertHistory } from "../../lib/storage";
 import { hapticSuccess, hapticTick } from "../../lib/haptics";
+import { plotLabel, totalArea, type Plot } from "../../lib/worksheet";
 import { ShapeGlyph } from "../../components/ShapeGlyphs";
 import { InputCard } from "../../components/InputCard";
 import { TonalButton } from "../../components/TonalButton";
@@ -34,13 +35,145 @@ const fieldValid = (raw: string): boolean => {
   return parsed !== null && cmp(parsed, ZERO) > 0;
 };
 
-export default function PorimapScreen() {
+/** Area display in square feet, square metres, and the shoto/katha/bigha/acre strip. */
+function AreaCard({
+  heading,
+  areaSqft,
+  showRates = false,
+}: {
+  readonly heading: string;
+  readonly areaSqft: Fraction;
+  readonly showRates?: boolean;
+}) {
   const { colors } = useThemeColors();
   const locale = useLocale();
   const { rates, isCustom } = useRates();
+
+  return (
+    <View
+      style={{
+        backgroundColor: colors.surface,
+        borderColor: colors.outlineVariant,
+        borderWidth: 1,
+        borderRadius: radius.lg,
+        padding: spacing[4],
+        gap: spacing[3],
+      }}
+    >
+      {/* Tier 1 — square feet */}
+      <View style={{ alignItems: "center", gap: spacing[0] }}>
+        <Text
+          style={{
+            color: colors.onSurfaceVariant,
+            fontSize: 12,
+            fontWeight: "600",
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            textAlign: "center",
+            fontFamily: typography.fonts.bengali,
+          }}
+        >
+          {heading}
+        </Text>
+        <Text
+          style={{
+            color: colors.onSurface,
+            fontSize: 40,
+            fontWeight: "700",
+            fontFamily: typography.fonts.display,
+            textAlign: "center",
+          }}
+        >
+          {formatLand(areaSqft, 2, locale)}
+          <Text
+            style={{
+              fontSize: 16,
+              color: colors.onSurfaceVariant,
+              fontFamily: typography.fonts.bengali,
+            }}
+          >
+            {" "}
+            {t("unit_sqft")}
+          </Text>
+        </Text>
+      </View>
+
+      {/* Tier 2 — m² equivalent */}
+      <Text
+        style={{
+          color: colors.onSurface,
+          fontSize: 15,
+          textAlign: "center",
+          fontFamily: typography.fonts.bengali,
+        }}
+      >
+        {formatLand(convert(areaSqft, "sqft", "sqm", rates), 2, locale)} {t("unit_sqm")}
+      </Text>
+
+      {/* Tier 3 — conversion strip (shoto/katha/bigha/acre) */}
+      <View style={{ flexDirection: "row" }}>
+        {conversionStrip(div(areaSqft, unitFactor("shoto", rates)), rates, locale).map(
+          (item, index) => (
+            <View
+              key={item.unit}
+              style={{
+                flex: 1,
+                alignItems: "center",
+                paddingVertical: spacing[2],
+                borderLeftWidth: index === 0 ? 0 : 1,
+                borderLeftColor: colors.outlineVariant,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.onSurface,
+                  fontSize: 16,
+                  fontWeight: "700",
+                  fontFamily: typography.fonts.bengali,
+                }}
+              >
+                {item.value}
+              </Text>
+              <Text
+                style={{
+                  color: colors.onSurfaceVariant,
+                  fontSize: 12,
+                  fontWeight: "600",
+                  fontFamily: typography.fonts.bengali,
+                }}
+              >
+                {t(`unit_${item.unit}`)}
+              </Text>
+            </View>
+          ),
+        )}
+      </View>
+
+      {showRates && isCustom ? (
+        <Text
+          style={{
+            color: colors.onSurfaceVariant,
+            fontSize: 12,
+            textAlign: "center",
+            fontFamily: typography.fonts.bengali,
+          }}
+        >
+          {t("rates_badge")}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+export default function LandScreen() {
+  const { colors } = useThemeColors();
+  const locale = useLocale();
   const router = useRouter();
   const [shape, setShape] = useState<ShapeId>("quad");
   const [inputs, setInputs] = useState<Record<string, string>>({});
+  const [plots, setPlots] = useState<Plot[]>([]);
+  const [savedNote, setSavedNote] = useState(false);
+  const nextPlotId = useRef(0);
 
   const fields = shapeFields(shape);
 
@@ -55,11 +188,12 @@ export default function PorimapScreen() {
   }, [shape, fields, inputs]);
 
   /** Exact rational approximation of the live area; fine for 2dp displays. */
-  const live = useMemo(() => {
+  const liveSqft = useMemo<Fraction | null>(() => {
     if (compute === null || !compute.res.ok) return null;
-    const approx = parseDecimal(areaToDecimal(compute.res.area, 10));
-    return approx === null ? null : { area: compute.res.area, approx };
+    return parseDecimal(areaToDecimal(compute.res.area, 10));
   }, [compute]);
+
+  const total = useMemo(() => totalArea(plots), [plots]);
 
   const triangleBlocked = compute !== null && shape === "triangle" && !compute.res.ok;
 
@@ -96,7 +230,19 @@ export default function PorimapScreen() {
     };
   }, [payload]);
 
-  const [savedNote, setSavedNote] = useState(false);
+  const addPlot = () => {
+    if (liveSqft === null) return;
+    nextPlotId.current += 1;
+    setPlots((prev) => [...prev, { id: `plot-${nextPlotId.current}`, shape, areaSqft: liveSqft }]);
+    setInputs({});
+    setSavedNote(false);
+    hapticSuccess();
+  };
+
+  const removePlot = (id: string) => {
+    setPlots((prev) => prev.filter((plot) => plot.id !== id));
+    hapticTick();
+  };
 
   return (
     <ScrollView
@@ -108,54 +254,57 @@ export default function PorimapScreen() {
       }}
       keyboardShouldPersistTaps="handled"
     >
-      {/* Shape picker — wrapping grid of 7 glyphs */}
-      <View
-        accessibilityRole="radiogroup"
-        style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}
-      >
-        {SHAPE_ORDER.map((id) => {
-          const selected = id === shape;
-          return (
-            <Pressable
-              key={id}
-              onPress={() => {
-                setShape(id);
-                hapticTick();
-              }}
-              style={{
-                minHeight: 48,
-                flexGrow: 1,
-                paddingHorizontal: spacing[2],
-                borderRadius: radius.md,
-                borderWidth: 1,
-                borderColor: selected ? colors.primary : colors.outlineVariant,
-                backgroundColor: selected ? colors.primaryContainer : colors.surfaceVariant,
-                alignItems: "center",
-                justifyContent: "center",
-                gap: spacing[1],
-              }}
-              accessibilityRole="button"
-              accessibilityState={{ selected }}
-              accessibilityLabel={t(`shape_${shapeKey(id)}`)}
-            >
-              <ShapeGlyph
-                shape={id}
-                size={28}
-                color={selected ? colors.onPrimaryContainer : colors.onSurfaceVariant}
-              />
-              <Text
-                style={{
-                  color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
-                  fontSize: 13,
-                  fontWeight: selected ? "600" : "400",
-                  fontFamily: typography.fonts.bengali,
+      {/* Shape picker — horizontal chip row of 11 glyphs */}
+      <View accessibilityRole="radiogroup">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: spacing[1], paddingRight: spacing[1] }}
+        >
+          {SHAPE_ORDER.map((id) => {
+            const selected = id === shape;
+            return (
+              <Pressable
+                key={id}
+                onPress={() => {
+                  setShape(id);
+                  hapticTick();
                 }}
+                style={{
+                  minHeight: 56,
+                  minWidth: 68,
+                  paddingHorizontal: spacing[2],
+                  borderRadius: radius.md,
+                  borderWidth: 1,
+                  borderColor: selected ? colors.primary : colors.outlineVariant,
+                  backgroundColor: selected ? colors.primaryContainer : colors.surfaceVariant,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: spacing[0],
+                }}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                accessibilityLabel={t(`shape_${shapeKey(id)}`)}
               >
-                {t(`shape_${shapeKey(id)}`)}
-              </Text>
-            </Pressable>
-          );
-        })}
+                <ShapeGlyph
+                  shape={id}
+                  size={28}
+                  color={selected ? colors.onPrimaryContainer : colors.onSurfaceVariant}
+                />
+                <Text
+                  style={{
+                    color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                    fontSize: 13,
+                    fontWeight: selected ? "600" : "400",
+                    fontFamily: typography.fonts.bengali,
+                  }}
+                >
+                  {t(`shape_${shapeKey(id)}`)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
       </View>
 
       {/* Per-shape dimension inputs (feet) */}
@@ -187,7 +336,7 @@ export default function PorimapScreen() {
         })}
       </View>
 
-      {live !== null ? (
+      {liveSqft !== null ? (
         <>
           {savedNote ? (
             <Text
@@ -203,118 +352,7 @@ export default function PorimapScreen() {
               {t("history_saved")}
             </Text>
           ) : null}
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              borderColor: colors.outlineVariant,
-              borderWidth: 1,
-              borderRadius: radius.lg,
-              padding: spacing[4],
-              gap: spacing[3],
-            }}
-          >
-            {/* Tier 1 — live area */}
-            <View style={{ alignItems: "center", gap: spacing[0] }}>
-              <Text
-                style={{
-                  color: colors.onSurfaceVariant,
-                  fontSize: 12,
-                  fontWeight: "600",
-                  letterSpacing: 1,
-                  textTransform: "uppercase",
-                  textAlign: "center",
-                  fontFamily: typography.fonts.bengali,
-                }}
-              >
-                {t("live_area")}
-              </Text>
-              <Text
-                style={{
-                  color: colors.onSurface,
-                  fontSize: 40,
-                  fontWeight: "700",
-                  fontFamily: typography.fonts.display,
-                  textAlign: "center",
-                }}
-              >
-                {formatLand(live.approx, 2, locale)}
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: colors.onSurfaceVariant,
-                    fontFamily: typography.fonts.bengali,
-                  }}
-                >
-                  {" "}
-                  {t("unit_sqft")}
-                </Text>
-              </Text>
-            </View>
-
-            {/* Tier 2 — m² equivalent */}
-            <Text
-              style={{
-                color: colors.onSurface,
-                fontSize: 15,
-                textAlign: "center",
-                fontFamily: typography.fonts.bengali,
-              }}
-            >
-              {formatLand(convert(live.approx, "sqft", "sqm", rates), 2, locale)} {t("unit_sqm")}
-            </Text>
-
-            {/* Tier 3 — conversion strip (shoto/katha/bigha/acre) */}
-            <View style={{ flexDirection: "row" }}>
-              {conversionStrip(div(live.approx, unitFactor("shoto", rates)), rates, locale).map(
-                (item, index) => (
-                  <View
-                    key={item.unit}
-                    style={{
-                      flex: 1,
-                      alignItems: "center",
-                      paddingVertical: spacing[2],
-                      borderLeftWidth: index === 0 ? 0 : 1,
-                      borderLeftColor: colors.outlineVariant,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: colors.onSurface,
-                        fontSize: 16,
-                        fontWeight: "700",
-                        fontFamily: typography.fonts.bengali,
-                      }}
-                    >
-                      {item.value}
-                    </Text>
-                    <Text
-                      style={{
-                        color: colors.onSurfaceVariant,
-                        fontSize: 12,
-                        fontWeight: "600",
-                        fontFamily: typography.fonts.bengali,
-                      }}
-                    >
-                      {t(`unit_${item.unit}`)}
-                    </Text>
-                  </View>
-                ),
-              )}
-            </View>
-
-            {isCustom ? (
-              <Text
-                style={{
-                  color: colors.onSurfaceVariant,
-                  fontSize: 12,
-                  textAlign: "center",
-                  fontFamily: typography.fonts.bengali,
-                }}
-              >
-                {t("rates_badge")}
-              </Text>
-            ) : null}
-          </View>
+          <AreaCard heading={t("live_area")} areaSqft={liveSqft} showRates />
         </>
       ) : triangleBlocked ? (
         <View
@@ -365,6 +403,94 @@ export default function PorimapScreen() {
           </Text>
         </View>
       )}
+
+      <TonalButton
+        label={t("worksheet_add")}
+        variant="tonal"
+        onPress={addPlot}
+        disabled={liveSqft === null}
+      />
+
+      {plots.length > 0 ? (
+        <View style={{ gap: spacing[2] }}>
+          <Text
+            style={{
+              color: colors.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: "600",
+              letterSpacing: 1,
+              textTransform: "uppercase",
+              fontFamily: typography.fonts.bengali,
+            }}
+          >
+            {t("worksheet_title")}
+          </Text>
+
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderColor: colors.outlineVariant,
+              borderWidth: 1,
+              borderRadius: radius.lg,
+              paddingHorizontal: spacing[3],
+            }}
+          >
+            {plots.map((plot, index) => (
+              <View
+                key={plot.id}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacing[2],
+                  paddingVertical: spacing[2],
+                  borderBottomWidth: index === plots.length - 1 ? 0 : 1,
+                  borderBottomColor: colors.outlineVariant,
+                }}
+              >
+                <ShapeGlyph shape={plot.shape} size={22} color={colors.onSurfaceVariant} />
+                <View style={{ flex: 1, gap: spacing[0] }}>
+                  <Text
+                    style={{
+                      color: colors.onSurface,
+                      fontSize: 14,
+                      fontWeight: "600",
+                      fontFamily: typography.fonts.bengali,
+                    }}
+                  >
+                    {plotLabel(plot, locale)}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.onSurfaceVariant,
+                      fontSize: 13,
+                      fontFamily: typography.fonts.bengali,
+                    }}
+                  >
+                    {formatLand(plot.areaSqft, 2, locale)} {t("unit_sqft")}
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t("worksheet_remove")}: ${plotLabel(plot, locale)}`}
+                  hitSlop={8}
+                  onPress={() => removePlot(plot.id)}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: radius.full,
+                  }}
+                >
+                  <Trash2 size={20} color={colors.error} />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+
+          <AreaCard heading={t("worksheet_total")} areaSqft={total} />
+        </View>
+      ) : null}
 
       <View style={{ flexDirection: "row", gap: spacing[2] }}>
         <View style={{ flex: 1 }}>
