@@ -39,9 +39,10 @@ export function convertTable(
   from: UnitId,
   rates: Rates,
   locale: "bn" | "en",
+  kaniSqft?: Fraction,
 ): { unit: UnitId; value: string }[] {
   return absoluteUnitIds.map((unit) => {
-    const converted = convertUnit(value, from, unit, rates);
+    const converted = convertUnit(value, from, unit, rates, kaniSqft);
     return { unit, value: formatLand(converted, 2, locale) };
   });
 }

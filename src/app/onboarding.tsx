@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { spacing, typography, useThemeColors } from "../constants/theme";
+import { radius, spacing, typography, useThemeColors } from "../constants/theme";
 import { t, useLocale } from "../lib/i18n";
 import { TonalButton } from "../components/TonalButton";
 
@@ -54,21 +54,35 @@ export default function OnboardingScreen() {
     router.replace("/(tabs)/hissa");
   };
 
+  const go = (tab: "hissa" | "land" | "convert"): void => {
+    void AsyncStorage.setItem(ONBOARDING_KEY, "true").catch(() => {});
+    router.replace(
+      tab === "hissa" ? "/(tabs)/hissa" : tab === "land" ? "/(tabs)/land" : "/(tabs)/convert",
+    );
+  };
+
   const slides = [
     {
       title: t("onboarding_slide1_title"),
       body: t("onboarding_slide1_body"),
       glyphs: "\u2044  \u09F5  \u09F6  \u09F7",
+      jobs: null,
     },
     {
       title: t("onboarding_slide2_title"),
       body: t("onboarding_slide2_body"),
       glyphs: null,
+      jobs: null,
     },
     {
-      title: "বণ্টন ও মাপ",
-      body: "একাধিক মালিকের ভাগ ও জমির পরিমাপ, এক অ্যাপে।",
+      title: t("onboarding_slide3_title"),
+      body: t("onboarding_interactive_hint"),
       glyphs: null,
+      jobs: [
+        { key: "hissa" as const, label: t("onboarding_job_hisab") },
+        { key: "land" as const, label: t("onboarding_job_measure") },
+        { key: "convert" as const, label: t("onboarding_job_convert") },
+      ],
     },
   ];
 
@@ -107,6 +121,27 @@ export default function OnboardingScreen() {
                 <Text style={[styles.glyphs, { color: colors.primary }]}>{slide.glyphs}</Text>
               </View>
             ) : null}
+            {slide.jobs ? (
+              <View style={styles.jobList}>
+                {slide.jobs.map((job) => (
+                  <Pressable
+                    key={job.key}
+                    accessibilityRole="button"
+                    accessibilityLabel={job.label}
+                    onPress={() => go(job.key)}
+                    style={({ pressed }) => [
+                      styles.jobCard,
+                      {
+                        backgroundColor: pressed ? colors.primaryContainer : colors.surfaceVariant,
+                        borderColor: colors.outlineVariant,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.jobLabel, { color: colors.onSurface }]}>{job.label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
           </View>
         ))}
       </ScrollView>
@@ -131,7 +166,11 @@ export default function OnboardingScreen() {
         {isLast ? (
           <TonalButton label={t("onboarding_start")} variant="filled" onPress={finish} />
         ) : (
-          <TonalButton label="পরবর্তী" variant="filled" onPress={() => scrollToPage(page + 1)} />
+          <TonalButton
+            label={t("onboarding_next")}
+            variant="filled"
+            onPress={() => scrollToPage(page + 1)}
+          />
         )}
         <Pressable
           accessibilityRole="button"
@@ -169,6 +208,24 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes[2],
     lineHeight: 24,
     textAlign: "center",
+  },
+  jobList: {
+    gap: spacing[2],
+    marginTop: spacing[3],
+    width: "100%",
+  },
+  jobCard: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 56,
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+  },
+  jobLabel: {
+    fontFamily: typography.fonts.bengali,
+    fontSize: typography.sizes[2],
+    fontWeight: "600",
   },
   glyphRow: { marginTop: spacing[2] },
   glyphs: {

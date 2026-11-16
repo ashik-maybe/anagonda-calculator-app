@@ -60,7 +60,13 @@ export const GUNIA_LINKS_PER_MILE: Fraction = parseStrict(raw.gunia.linksPerMile
 export const GUNIA_SCALE_LINKS_PER_INCH: Readonly<Record<string, number>> =
   raw.gunia.scaleLinksPerInch;
 
-export function unitFactor(id: AbsoluteUnitId, rates: Rates = DEFAULT_RATES): Fraction {
+export function unitFactor(
+  id: AbsoluteUnitId,
+  rates: Rates = DEFAULT_RATES,
+  kaniSqft?: Fraction,
+): Fraction {
+  // Kani has two conventions in use (17,280 sqft / 17,424 sqft); callers may override.
+  if (id === "kani" && kaniSqft) return kaniSqft;
   const row = raw.absolute.find((r) => r.id === id) as
     | { id: string; rateId?: string; divideBy?: number }
     | undefined;
@@ -81,8 +87,9 @@ export function convert(
   from: AbsoluteUnitId,
   to: AbsoluteUnitId,
   rates: Rates = DEFAULT_RATES,
+  kaniSqft?: Fraction,
 ): Fraction {
-  return div(mul(value, unitFactor(from, rates)), unitFactor(to, rates));
+  return div(mul(value, unitFactor(from, rates, kaniSqft)), unitFactor(to, rates, kaniSqft));
 }
 
 export function guniaInchToLinks(inchScale: number): number | null {

@@ -18,6 +18,7 @@ type Props = {
   readonly value: Fraction | null;
   readonly rates: Rates;
   readonly locale: "bn" | "en";
+  readonly kaniSqft?: Fraction;
 };
 
 const TRADITIONAL_SET: ReadonlySet<string> = new Set([
@@ -35,7 +36,7 @@ const TRADITIONAL_SET: ReadonlySet<string> = new Set([
 ]);
 
 /** Primary conversion result: big formatted value, decomposition chips, copy/share. */
-export function ConversionHero({ from, to, value, rates, locale }: Props) {
+export function ConversionHero({ from, to, value, rates, locale, kaniSqft }: Props) {
   const { colors } = useThemeColors();
   const [copied, setCopied] = useState(false);
 
@@ -49,7 +50,7 @@ export function ConversionHero({ from, to, value, rates, locale }: Props) {
     return null;
   }
 
-  const result = convert(value, from, to, rates);
+  const result = convert(value, from, to, rates, kaniSqft);
   const resultText = formatLand(result, 2, locale);
   const sentence = `${resultText} ${t(`unit_${to}`)}`;
   const decomposition = TRADITIONAL_SET.has(to) ? decomposeArea(result, rates, locale) : null;

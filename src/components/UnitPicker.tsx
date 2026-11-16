@@ -52,7 +52,7 @@ export function UnitPicker({ value, onSelect, exclude, titleKey }: Props) {
 
   const rows = useMemo<Row[]>(() => {
     const groups: readonly Group[] = [
-      { title: "প্রচলিত", units: TRADITIONAL_UNITS },
+      { title: t("group_traditional"), units: TRADITIONAL_UNITS },
       { title: t("convert_advanced"), units: METRIC_UNITS },
     ];
     const q = query.trim().toLowerCase();

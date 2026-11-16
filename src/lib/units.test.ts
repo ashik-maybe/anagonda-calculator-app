@@ -106,3 +106,24 @@ describe("units: new traditional units", () => {
     expect(eq(unitFactor("chotak", rates), frac(50))).toBe(true);
   });
 });
+
+describe("units: kani two conventions", () => {
+  test("default kani factor is 17,280 sqft", () => {
+    expect(eq(unitFactor("kani"), frac(17280))).toBe(true);
+  });
+  test("caller override switches kani to 17,424 sqft", () => {
+    expect(eq(unitFactor("kani", DEFAULT_RATES, frac(17424)), frac(17424))).toBe(true);
+  });
+  test("1 acre = 2.5 kani under the 40-shoto convention (exact)", () => {
+    expect(eq(convert(frac(43560), "sqft", "kani", DEFAULT_RATES, frac(17424)), frac(5, 2))).toBe(
+      true,
+    );
+  });
+  test("1 acre ≠ 2.5 kani under the default 20-gonda convention", () => {
+    expect(eq(convert(frac(43560), "sqft", "kani"), frac(43560, 17280))).toBe(true);
+  });
+  test("round trip 20 ganta -> 40 shoto -> back is exact", () => {
+    const k40 = convert(frac(1), "kani", "sqft", DEFAULT_RATES, frac(17424));
+    expect(eq(k40, frac(17424))).toBe(true);
+  });
+});

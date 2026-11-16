@@ -15,10 +15,12 @@ import { ArrowLeftRight, Check, ChevronDown, ChevronUp, Copy, X } from "lucide-r
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
 import { absoluteUnitIds, unitFactor, type AbsoluteUnitId } from "../../lib/units";
+import { frac } from "../../lib/fraction";
 import unitsData from "../../data/units.json";
 import { isDefaultRates } from "../../lib/rates";
 import { useRates } from "../../components/RatesProvider";
 import { InputCard } from "../../components/InputCard";
+import { SegmentedControl } from "../../components/SegmentedControl";
 import { UnitPicker, TRADITIONAL_UNITS, METRIC_UNITS } from "../../components/UnitPicker";
 import { ConversionHero } from "../../components/ConversionHero";
 import { parseInput, convertTable } from "../../lib/convert";
@@ -40,8 +42,15 @@ export default function ConvertScreen() {
       : "shoto";
   });
   const [to, setTo] = useState<AbsoluteUnitId>("sqft");
+  const [kaniConvention, setKaniConvention] = useState<"20gonda" | "40shoto">("20gonda");
   const [copiedUnit, setCopiedUnit] = useState<AbsoluteUnitId | null>(null);
   const [allOpen, setAllOpen] = useState(true);
+
+  // Kani is 17,280 sqft by 20-gonda convention and 17,424 sqft by 40-shoto convention.
+  const kaniSqft = useMemo(
+    () => frac(kaniConvention === "20gonda" ? 17280n : 17424n),
+    [kaniConvention],
+  );
 
   const value = useMemo(() => parseInput(raw), [raw]);
   const inputError = raw.trim() !== "" && value === null ? t("err_positive") : null;
@@ -51,15 +60,15 @@ export default function ConvertScreen() {
     if (!value) return null;
     const seen = new Set<string>();
     const out: ConvertRow[] = [];
-    for (const row of convertTable(value, from, rates, locale)) {
-      const factor = unitFactor(row.unit, rates);
+    for (const row of convertTable(value, from, rates, locale, kaniSqft)) {
+      const factor = unitFactor(row.unit, rates, kaniSqft);
       const key = `${factor.num}/${factor.den}`;
       if (seen.has(key)) continue;
       seen.add(key);
       out.push(row);
     }
     return out;
-  }, [value, from, rates, locale]);
+  }, [value, from, rates, locale, kaniSqft]);
 
   useEffect(() => {
     if (copiedUnit === null) return;
@@ -86,7 +95,7 @@ export default function ConvertScreen() {
   };
 
   const groups = [
-    { title: "প্রচলিত", units: TRADITIONAL_UNITS },
+    { title: t("group_traditional"), units: TRADITIONAL_UNITS },
     { title: t("convert_advanced"), units: METRIC_UNITS },
   ];
 
@@ -177,11 +186,39 @@ export default function ConvertScreen() {
           />
         </View>
 
+        {/* Kani convention — the unit has two accepted sizes in BD */}
+        <View style={styles.kaniRow}>
+          <Text style={[styles.kaniLabel, { color: colors.onSurfaceVariant }]}>
+            {t("convert_kani_convention")}
+          </Text>
+          <View style={{ width: 220 }}>
+            <SegmentedControl
+              accessibilityLabel={t("convert_kani_convention")}
+              segments={[
+                { key: "20gonda", label: t("convert_kani_20gonda") },
+                { key: "40shoto", label: t("convert_kani_40shoto") },
+              ]}
+              value={kaniConvention}
+              onChange={(key) => {
+                setKaniConvention(key === "40shoto" ? "40shoto" : "20gonda");
+                hapticTick();
+              }}
+            />
+          </View>
+        </View>
+
         {custom ? (
           <Text style={[styles.badge, { color: colors.onSurfaceVariant }]}>{t("rates_badge")}</Text>
         ) : null}
 
-        <ConversionHero from={from} to={to} value={value} rates={rates} locale={locale} />
+        <ConversionHero
+          from={from}
+          to={to}
+          value={value}
+          rates={rates}
+          locale={locale}
+          kaniSqft={kaniSqft}
+        />
 
         {/* Collapsible reference table */}
         <Pressable
@@ -338,6 +375,17 @@ export default function ConvertScreen() {
 }
 
 const styles = StyleSheet.create({
+  kaniRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing[2],
+  },
+  kaniLabel: {
+    fontFamily: typography.fonts.bengali,
+    fontSize: typography.sizes[1],
+    fontWeight: "600",
+  },
   subtitle: {
     fontFamily: typography.fonts.bengali,
     fontSize: typography.sizes[1],
