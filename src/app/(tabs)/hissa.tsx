@@ -38,7 +38,7 @@ export default function HishabScreen() {
     <View style={{ backgroundColor: colors.background, flex: 1 }}>
       <View style={{ padding: spacing[3], paddingBottom: 0 }}>
         <SegmentedControl
-          accessibilityLabel={t("tab_hishab")}
+          accessibilityLabel={t("tab_hissa")}
           onChange={(key) => {
             const next: HishabMode =
               key === "bonton" ? "bonton" : key === "reverse" ? "reverse" : "hishab";

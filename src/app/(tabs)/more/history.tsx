@@ -128,7 +128,7 @@ export default function HistoryScreen() {
                 locale={locale}
                 onPress={() =>
                   router.push({
-                    pathname: "/(tabs)/hishab",
+                    pathname: "/(tabs)/hissa",
                     params: { prefill: item.inputJson },
                   })
                 }

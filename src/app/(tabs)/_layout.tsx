@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Calculator, Home, MoreHorizontal, Ruler } from "lucide-react-native";
+import { ArrowLeftRight, MoreHorizontal, Ruler } from "lucide-react-native";
 import { t, useLocale } from "../../lib/i18n";
 import { useThemeColors } from "../../constants/theme";
 
@@ -20,31 +20,30 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="hissa"
         options={{
-          title: t("tab_home"),
+          title: t("tab_hissa"),
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
         }}
       />
       <Tabs.Screen
-        name="hishab"
+        name="land"
         options={{
-          title: t("tab_hishab"),
-          tabBarIcon: ({ color, size }) => <Calculator color={color} size={size} />,
+          title: t("tab_land"),
+          tabBarIcon: ({ color, size }) => <Ruler color={color} size={size} />,
         }}
       />
       <Tabs.Screen
-        name="porimap"
+        name="convert"
         options={{
-          title: t("tab_porimap"),
-          tabBarIcon: ({ color, size }) => <Ruler color={color} size={size} />,
+          title: t("tab_convert"),
+          tabBarIcon: ({ color, size }) => <ArrowLeftRight color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="more"
         options={{
           title: t("tab_more"),
-          // The more tab hosts a nested Stack with its own headers.
           headerShown: false,
           tabBarIcon: ({ color, size }) => <MoreHorizontal color={color} size={size} />,
         }}
