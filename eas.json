@@ -1,10 +1,15 @@
 {
-  "cli": { "version": ">= 13.0.0" },
+  "cli": {
+    "version": ">= 13.0.0"
+  },
   "build": {
-    "development": { "developmentClient": true, "distribution": "internal" },
-    "preview": { "distribution": "internal" },
-    "production": {},
-    "store": { "extends": "production", "env": { "EXPO_PUBLIC_ADS_ENABLED": "1" } },
-    "clean": { "extends": "production", "env": { "EXPO_PUBLIC_ADS_ENABLED": "0" } }
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
   }
 }

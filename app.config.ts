@@ -76,10 +76,12 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.anagonda.calculator",
+      buildNumber: "1",
       icon: "./assets/expo.icon",
     },
     android: {
       package: "com.anagonda.calculator",
+      versionCode: 1,
       adaptiveIcon: {
         foregroundImage: "./assets/images/android-icon-foreground.png",
         backgroundImage: "./assets/images/android-icon-background.png",
