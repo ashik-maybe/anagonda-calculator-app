@@ -28,6 +28,7 @@ import { Worksheet } from "../../components/Worksheet";
 import { BnText } from "../../components/BnText";
 import { EmptyState } from "../../components/EmptyState";
 import { AreaCard } from "../../components/AreaCard";
+import { Reveal } from "../../components/Reveal";
 
 /**
  * A field counts as valid when its raw text parses as a decimal and is
@@ -379,35 +380,37 @@ export default function LandScreen() {
             </View>
 
             {liveSqft !== null ? (
-              <>
-                {savedNote ? (
-                  <Text
-                    accessibilityLiveRegion="polite"
-                    style={{
-                      color: colors.success,
-                      fontSize: 13,
-                      fontWeight: "600",
-                      textAlign: "center",
-                      fontFamily: typography.fonts.bengali,
-                    }}
+              <Reveal>
+                <>
+                  {savedNote ? (
+                    <Text
+                      accessibilityLiveRegion="polite"
+                      style={{
+                        color: colors.success,
+                        fontSize: 13,
+                        fontWeight: "600",
+                        textAlign: "center",
+                        fontFamily: typography.fonts.bengali,
+                      }}
+                    >
+                      {t("history_saved")}
+                    </Text>
+                  ) : null}
+                  <AreaCard heading={t("live_area")} areaSqft={liveSqft} showRates />
+                  <BnText
+                    variant="caption"
+                    style={{ color: colors.onSurfaceVariant, textAlign: "center" }}
                   >
-                    {t("history_saved")}
-                  </Text>
-                ) : null}
-                <AreaCard heading={t("live_area")} areaSqft={liveSqft} showRates />
-                <BnText
-                  variant="caption"
-                  style={{ color: colors.onSurfaceVariant, textAlign: "center" }}
-                >
-                  {t("land_result_unit")}: {t("unit_sqft")}
-                </BnText>
-                <TonalButton
-                  label={t("worksheet_add")}
-                  variant="tonal"
-                  onPress={addPlot}
-                  disabled={liveSqft === null}
-                />
-              </>
+                    {t("land_result_unit")}: {t("unit_sqft")}
+                  </BnText>
+                  <TonalButton
+                    label={t("worksheet_add")}
+                    variant="tonal"
+                    onPress={addPlot}
+                    disabled={liveSqft === null}
+                  />
+                </>
+              </Reveal>
             ) : triangleBlocked ? (
               <View
                 style={{

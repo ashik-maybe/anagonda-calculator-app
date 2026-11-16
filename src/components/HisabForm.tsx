@@ -18,6 +18,7 @@ import { GlyphKeypad } from "./GlyphKeypad";
 import { Stepper } from "./Stepper";
 import { BnText } from "./BnText";
 import { ModePicker, type HisabMethod } from "./ModePicker";
+import { Reveal } from "./Reveal";
 import ResultCard from "./ResultCard";
 import { useRates } from "./RatesProvider";
 
@@ -274,42 +275,44 @@ export function HisabForm({ prefill }: Props) {
 
       {/* 1 — Compact live answer bar (kept visible while tapping glyphs) */}
       {result ? (
-        <View
-          style={{
-            backgroundColor: colors.surfaceVariant,
-            borderRadius: radius.md,
-            padding: spacing[2],
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: spacing[2],
-          }}
-        >
-          <Text
+        <Reveal>
+          <View
             style={{
-              color: colors.primary,
-              fontFamily: typography.fonts.bengali,
-              fontSize: typography.sizes[2],
-              fontWeight: "700",
-              flex: 1,
+              backgroundColor: colors.surfaceVariant,
+              borderRadius: radius.md,
+              padding: spacing[2],
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: spacing[2],
             }}
-            numberOfLines={1}
           >
-            {result.chainText}
-          </Text>
-          {result.deed ? (
             <Text
               style={{
-                color: colors.onSurface,
-                fontFamily: typography.fonts.display,
-                fontSize: typography.sizes[3],
+                color: colors.primary,
+                fontFamily: typography.fonts.bengali,
+                fontSize: typography.sizes[2],
                 fontWeight: "700",
+                flex: 1,
               }}
+              numberOfLines={1}
             >
-              {result.deed.areaText}
+              {result.chainText}
             </Text>
-          ) : null}
-        </View>
+            {result.deed ? (
+              <Text
+                style={{
+                  color: colors.onSurface,
+                  fontFamily: typography.fonts.display,
+                  fontSize: typography.sizes[3],
+                  fontWeight: "700",
+                }}
+              >
+                {result.deed.areaText}
+              </Text>
+            ) : null}
+          </View>
+        </Reveal>
       ) : null}
 
       {/* 2 — Method picker: glyph strip, ana chain fields, or percent shortcut */}
@@ -480,91 +483,93 @@ export function HisabForm({ prefill }: Props) {
 
       {/* 7 — Live answer card (no button) */}
       {result ? (
-        <>
-          {savedNote ? (
-            <Text
-              accessibilityLiveRegion="polite"
-              style={{
-                color: colors.success,
-                fontSize: 13,
-                fontWeight: "600",
-                textAlign: "center",
-              }}
-            >
-              {t("history_saved")}
-            </Text>
-          ) : null}
-          {result.deed ? (
-            <ResultCard deed={result.deed} />
-          ) : (
-            <View
-              accessibilityRole="summary"
-              accessibilityLabel={`${t("result")}: ${result.chainText}, ${result.ratioText} ${t("ratio_share")}, ${result.percentText}%`}
-              style={{
-                backgroundColor: colors.surface,
-                borderColor: colors.outlineVariant,
-                borderWidth: 1,
-                borderRadius: radius.lg,
-                padding: spacing[4],
-                gap: spacing[2],
-                alignItems: "center",
-              }}
-            >
+        <Reveal>
+          <>
+            {savedNote ? (
               <Text
+                accessibilityLiveRegion="polite"
                 style={{
-                  color: colors.onSurfaceVariant,
-                  fontSize: 12,
+                  color: colors.success,
+                  fontSize: 13,
                   fontWeight: "600",
-                  letterSpacing: 1,
-                  textTransform: "uppercase",
-                }}
-              >
-                {t("result")}
-              </Text>
-              <Text
-                style={{
-                  color: colors.primary,
-                  fontSize: 28,
-                  lineHeight: 36,
-                  fontWeight: "700",
                   textAlign: "center",
-                  fontFamily: typography.fonts.bengali,
                 }}
               >
-                {result.chainText}
+                {t("history_saved")}
               </Text>
+            ) : null}
+            {result.deed ? (
+              <ResultCard deed={result.deed} />
+            ) : (
               <View
+                accessibilityRole="summary"
+                accessibilityLabel={`${t("result")}: ${result.chainText}, ${result.ratioText} ${t("ratio_share")}, ${result.percentText}%`}
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "baseline",
-                  gap: spacing[4],
+                  backgroundColor: colors.surface,
+                  borderColor: colors.outlineVariant,
+                  borderWidth: 1,
+                  borderRadius: radius.lg,
+                  padding: spacing[4],
+                  gap: spacing[2],
+                  alignItems: "center",
                 }}
               >
                 <Text
                   style={{
-                    color: colors.onSurface,
-                    fontSize: 20,
+                    color: colors.onSurfaceVariant,
+                    fontSize: 12,
                     fontWeight: "600",
-                    fontFamily: typography.fonts.bengali,
+                    letterSpacing: 1,
+                    textTransform: "uppercase",
                   }}
                 >
-                  {result.ratioText} {t("ratio_share")}
+                  {t("result")}
                 </Text>
                 <Text
                   style={{
-                    color: colors.onSurface,
-                    fontSize: 20,
-                    fontWeight: "600",
+                    color: colors.primary,
+                    fontSize: 28,
+                    lineHeight: 36,
+                    fontWeight: "700",
+                    textAlign: "center",
                     fontFamily: typography.fonts.bengali,
                   }}
                 >
-                  {result.percentText}%
+                  {result.chainText}
                 </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "baseline",
+                    gap: spacing[4],
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.onSurface,
+                      fontSize: 20,
+                      fontWeight: "600",
+                      fontFamily: typography.fonts.bengali,
+                    }}
+                  >
+                    {result.ratioText} {t("ratio_share")}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.onSurface,
+                      fontSize: 20,
+                      fontWeight: "600",
+                      fontFamily: typography.fonts.bengali,
+                    }}
+                  >
+                    {result.percentText}%
+                  </Text>
+                </View>
               </View>
-            </View>
-          )}
-        </>
+            )}
+          </>
+        </Reveal>
       ) : (
         <View
           style={{
