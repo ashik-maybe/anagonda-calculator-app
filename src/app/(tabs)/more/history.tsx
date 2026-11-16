@@ -6,7 +6,7 @@ import { useThemeColors, spacing, typography, radius } from "../../../constants/
 import { t, useLocale } from "../../../lib/i18n";
 import { HistoryRow } from "../../../components/HistoryRow";
 import { TonalButton } from "../../../components/TonalButton";
-import { entryToDeed, formatEntryDate } from "../../../lib/historyView";
+import { entryToDeed, entryToRow, formatEntryDate } from "../../../lib/historyView";
 import { clearHistory, deleteHistory, listHistory, type HistoryEntry } from "../../../lib/storage";
 import { hapticSuccess, hapticTick, hapticWarning } from "../../../lib/haptics";
 
@@ -21,7 +21,7 @@ export default function HistoryScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      setRows(listHistory("hishab"));
+      setRows(listHistory());
     }, []),
   );
 
@@ -30,8 +30,9 @@ export default function HistoryScreen() {
     if (!q) return rows;
     return rows.filter((entry) => {
       const deed = entryToDeed(entry, locale);
+      const row = entryToRow(entry, locale);
       const hay =
-        `${entry.inputJson} ${entry.resultJson} ${deed?.chainText ?? ""} ${deed?.areaText ?? ""} ${deed?.sentence ?? ""}`.toLowerCase();
+        `${entry.inputJson} ${entry.resultJson} ${row.title} ${row.subtitle} ${deed?.chainText ?? ""} ${deed?.areaText ?? ""} ${deed?.sentence ?? ""}`.toLowerCase();
       return hay.includes(q);
     });
   }, [rows, query, locale]);
@@ -39,7 +40,7 @@ export default function HistoryScreen() {
   const onDelete = (id: number): void => {
     hapticTick();
     deleteHistory(id);
-    setRows(listHistory("hishab"));
+    setRows(listHistory());
   };
 
   const onClear = (): void => {
@@ -52,7 +53,7 @@ export default function HistoryScreen() {
     if (armTimer.current) clearTimeout(armTimer.current);
     clearHistory();
     setArmed(false);
-    setRows(listHistory("hishab"));
+    setRows(listHistory());
     hapticSuccess();
   };
 
@@ -117,11 +118,11 @@ export default function HistoryScreen() {
           data={filtered}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => {
-            const deed = entryToDeed(item, locale);
+            const row = entryToRow(item, locale);
             return (
               <HistoryRow
-                title={deed?.chainText ?? t("hishab_title")}
-                subtitle={deed ? `${deed.areaText} ${t("unit_shoto")} · ${deed.ratioText}` : ""}
+                title={row.title}
+                subtitle={row.subtitle}
                 meta={formatEntryDate(item.createdAt, locale)}
                 deleteLabel={t("history_delete")}
                 locale={locale}

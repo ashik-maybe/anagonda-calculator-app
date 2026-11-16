@@ -73,5 +73,12 @@
   "history_delete": "Delete",
   "history_saved": "Saved to history",
   "ratio_share": "share",
-  "empty_hisab_hint": "Enter total shoto and ana-gonda parts"
+  "empty_hisab_hint": "Enter total shoto and ana-gonda parts",
+  "quick_bonton": "Split",
+  "add_owner": "Add owner",
+  "owner_limit": "Max 10 owners",
+  "sum_ok": "16 ana complete",
+  "owner_count": "Owner {n}",
+  "owner_name": "Name",
+  "sum_remainder": "remaining"
 }

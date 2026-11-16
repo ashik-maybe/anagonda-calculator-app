@@ -73,5 +73,12 @@
   "history_delete": "মুছুন",
   "history_saved": "ইতিহাস সংরক্ষিত",
   "ratio_share": "অংশ",
-  "empty_hisab_hint": "মোট শতাংশ এবং আনা-গন্ডা ভাগ দিন"
+  "empty_hisab_hint": "মোট শতাংশ এবং আনা-গন্ডা ভাগ দিন",
+  "quick_bonton": "বণ্টন",
+  "add_owner": "মালিক যোগ করুন",
+  "owner_limit": "সর্বোচ্চ ১০ জন মালিক",
+  "sum_ok": "১৬ আনা সম্পূর্ণ",
+  "owner_count": "মালিক {n}",
+  "owner_name": "নাম",
+  "sum_remainder": "বাকি"
 }

@@ -56,6 +56,24 @@ export function validateHisab(total: string, chain: Record<ChainKey, string>): H
   return { total: totalError, chain: chainErrors };
 }
 
+/**
+ * Validate only the five chain fields (per-owner rows in the ledger).
+ * Empty parts are allowed (0); non-integer / out-of-range input maps to
+ * "err_positive". Returns undefined entries for valid fields.
+ */
+export function validateChain(
+  chain: Record<ChainKey, string>,
+): Partial<Record<ChainKey, string | null>> {
+  const errors: Partial<Record<ChainKey, string | null>> = {};
+  for (const key of CHAIN_KEYS) {
+    const raw = chain[key] ?? "";
+    if (raw.trim() !== "" && parseChainPart(raw) === null) {
+      errors[key] = "err_positive";
+    }
+  }
+  return errors;
+}
+
 export function isHisabValid(errors: HisabErrors): boolean {
   if (errors.total !== null) return false;
   return Object.values(errors.chain).every((e) => e == null);

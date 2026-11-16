@@ -1,7 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import {
+  CHAIN_KEYS,
   parseChainPart,
   parseTotalShoto,
+  validateChain,
   validateHisab,
   isHisabValid,
   type ChainKey,
@@ -79,6 +81,43 @@ describe("validateHisab chain parts", () => {
   });
   it("empty chain part means 0 (no error)", () => {
     expect(validateHisab("100", allEmptyChain).chain.til).toBeUndefined();
+  });
+});
+
+describe("validateChain", () => {
+  it("all empty returns no errors", () => {
+    const err = validateChain(allEmptyChain);
+    for (const k of CHAIN_KEYS) expect(err[k]).toBeUndefined();
+  });
+
+  it("parses Bangla digits as valid", () => {
+    const chain: Record<ChainKey, string> = { ...allEmptyChain, ana: "১৬" };
+    const err = validateChain(chain);
+    expect(err.ana).toBeUndefined();
+  });
+
+  it("positive integer string is valid", () => {
+    const chain: Record<ChainKey, string> = { ...allEmptyChain, ana: "20" };
+    const err = validateChain(chain);
+    expect(err.ana).toBeUndefined();
+  });
+
+  it("rejects fractional chain part", () => {
+    const chain: Record<ChainKey, string> = { ...allEmptyChain, gonda: "1.5" };
+    const err = validateChain(chain);
+    expect(err.gonda).toBe("err_positive");
+  });
+
+  it("rejects non-numeric part", () => {
+    const chain: Record<ChainKey, string> = { ...allEmptyChain, kora: "x" };
+    const err = validateChain(chain);
+    expect(err.kora).toBe("err_positive");
+  });
+
+  it("ignores empty string parts", () => {
+    const chain: Record<ChainKey, string> = { ...allEmptyChain, kranti: "" };
+    const err = validateChain(chain);
+    expect(err.kranti).toBeUndefined();
   });
 });
 
