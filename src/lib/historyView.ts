@@ -12,7 +12,7 @@ import {
   ZERO,
   type Fraction,
 } from "./fraction";
-import { SHAPE_ORDER, type ShapeId } from "./shapes";
+import { SHAPE_ORDER, shapeKey, type ShapeId } from "./shapes";
 import type { HistoryEntry } from "./storage";
 import { convert } from "./units";
 
@@ -192,7 +192,7 @@ const porimapRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView =>
     if (!area || cmp(area, ZERO) < 0) return fallbackRow(locale);
 
     return {
-      title: `${localize(locale, "shape_" + shape)}: ${formatLand(area, 2, locale)} ${localize(
+      title: `${localize(locale, "shape_" + shapeKey(shape as ShapeId))}: ${formatLand(area, 2, locale)} ${localize(
         locale,
         "unit_sqft",
       )}`,

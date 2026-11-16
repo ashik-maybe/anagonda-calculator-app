@@ -141,7 +141,7 @@ export function ReverseForm({ prefill }: Props) {
         onChangeText={setArea}
         error={areaError}
         keyboardType="decimal-pad"
-        placeholder="0.00"
+        placeholder={locale === "bn" ? "০.০০" : "0.00"}
         accessibilityHint={t("area_label")}
       />
 
@@ -191,7 +191,7 @@ export function ReverseForm({ prefill }: Props) {
         onChangeText={setTotalShoto}
         error={totalError}
         keyboardType="decimal-pad"
-        placeholder="0.00"
+        placeholder={locale === "bn" ? "০.০০" : "0.00"}
         accessibilityHint={t("total_shoto")}
       />
 

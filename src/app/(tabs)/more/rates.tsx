@@ -5,7 +5,7 @@ import { useRates } from "../../../components/RatesProvider";
 import { parseRate } from "../../../lib/rates";
 import { hapticError, hapticSuccess, hapticWarning } from "../../../lib/haptics";
 import { radius, spacing, typography, useThemeColors } from "../../../constants/theme";
-import { t } from "../../../lib/i18n";
+import { t, useLocale } from "../../../lib/i18n";
 import { toDecimalString, type Fraction } from "../../../lib/fraction";
 import { InputCard } from "../../../components/InputCard";
 import { TonalButton } from "../../../components/TonalButton";
@@ -15,6 +15,7 @@ const rateInput = (f: Fraction): string => toDecimalString(f, 6).replace(/\.?0+$
 export default function RatesScreen() {
   const { colors } = useThemeColors();
   const { rates, isCustom, setRates, resetRates } = useRates();
+  const locale = useLocale();
 
   const [kathaDraft, setKathaDraft] = useState(() => rateInput(rates.kathaSqft));
   const [bighaDraft, setBighaDraft] = useState(() => rateInput(rates.bighaSqft));
@@ -88,7 +89,7 @@ export default function RatesScreen() {
         keyboardType="decimal-pad"
         label={t("rates_katha")}
         onChangeText={setKathaDraft}
-        placeholder="720"
+        placeholder={locale === "bn" ? "৭২০" : "720"}
         value={kathaDraft}
       />
       <InputCard
@@ -97,7 +98,7 @@ export default function RatesScreen() {
         keyboardType="decimal-pad"
         label={t("rates_bigha")}
         onChangeText={setBighaDraft}
-        placeholder="14400"
+        placeholder={locale === "bn" ? "১৪৪০০" : "14400"}
         value={bighaDraft}
       />
 

@@ -150,7 +150,7 @@ export function HisabForm({ prefill }: Props) {
         onChangeText={setTotalShoto}
         error={totalShoto.trim() !== "" && errors.total ? t(errors.total) : null}
         keyboardType="decimal-pad"
-        placeholder="0.00"
+        placeholder={locale === "bn" ? "০.০০" : "0.00"}
         accessibilityHint={t("total_shoto")}
       />
 

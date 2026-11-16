@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import bnRaw from "../i18n/bn.json";
 import enRaw from "../i18n/en.json";
 import { absoluteUnitIds } from "./units";
+import { SHAPE_ORDER, SHAPE_FIELDS, shapeKey } from "./shapes";
 
 const bn = bnRaw as Record<string, string>;
 const en = enRaw as Record<string, string>;
@@ -12,6 +13,28 @@ describe("i18n dictionaries", () => {
     const enKeys = Object.keys(en);
     expect(bnKeys.length).toBe(enKeys.length);
     expect(bnKeys.every((k) => k in en)).toBe(true);
+  });
+
+  test("every shape has a display-name key in both locales", () => {
+    for (const id of SHAPE_ORDER) {
+      const key = `shape_${shapeKey(id)}`;
+      expect(key in bn, `${key} missing in bn`).toBe(true);
+      expect(key in en, `${key} missing in en`).toBe(true);
+    }
+  });
+
+  test("every shape field has a display-name key in both locales", () => {
+    const seen = new Set<string>();
+    for (const id of SHAPE_ORDER) {
+      for (const field of SHAPE_FIELDS[id]) {
+        seen.add(field);
+      }
+    }
+    for (const field of seen) {
+      const key = `field_${field}`;
+      expect(key in bn, `${key} missing in bn`).toBe(true);
+      expect(key in en, `${key} missing in en`).toBe(true);
+    }
   });
 
   test("every absolute unit has a display-name key in both locales", () => {

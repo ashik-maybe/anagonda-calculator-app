@@ -91,6 +91,78 @@ const VALID_IOS_ROLES = new Set([
   "treeitem",
 ]);
 
+const VALID_LIVE_REGIONS = new Set(["none", "polite", "assertive"]);
+const VALID_IMPORTANT = new Set(["auto", "yes", "no", "no-hide-descendants"]);
+
+// ARIA Role union (RN `role` prop) — a broad superset; keep a known set.
+const VALID_ARIA_ROLES = new Set([
+  "alert",
+  "alertdialog",
+  "application",
+  "article",
+  "banner",
+  "button",
+  "cell",
+  "checkbox",
+  "columnheader",
+  "combobox",
+  "complementary",
+  "contentinfo",
+  "definition",
+  "dialog",
+  "directory",
+  "document",
+  "feed",
+  "figure",
+  "form",
+  "grid",
+  "group",
+  "heading",
+  "img",
+  "link",
+  "list",
+  "listitem",
+  "log",
+  "main",
+  "marquee",
+  "math",
+  "menu",
+  "menubar",
+  "menuitem",
+  "meter",
+  "navigation",
+  "none",
+  "note",
+  "option",
+  "presentation",
+  "progressbar",
+  "radio",
+  "radiogroup",
+  "region",
+  "row",
+  "rowgroup",
+  "rowheader",
+  "scrollbar",
+  "searchbox",
+  "separator",
+  "slider",
+  "spinbutton",
+  "status",
+  "summary",
+  "switch",
+  "tab",
+  "table",
+  "tablist",
+  "tabpanel",
+  "term",
+  "timer",
+  "toolbar",
+  "tooltip",
+  "tree",
+  "treegrid",
+  "treeitem",
+]);
+
 function walk(dir: string, files: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
@@ -105,20 +177,35 @@ function walk(dir: string, files: string[] = []): string[] {
   return files;
 }
 
-describe("accessibilityRole values", () => {
-  test("every accessibilityRole in src/ is accepted by iOS native", () => {
-    const root = join(process.cwd(), "src");
-    const offenders: string[] = [];
-    for (const file of walk(root)) {
-      const src = readFileSync(file, "utf8");
-      const re = /accessibilityRole=["'`]([A-Za-z]+)["'`]/g;
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(src)) !== null) {
-        if (!VALID_IOS_ROLES.has(m[1])) {
-          offenders.push(`${file}: ${m[1]}`);
-        }
-      }
+function scanProp(prop: string, allowed: Set<string>): string[] {
+  const root = join(process.cwd(), "src");
+  const offenders: string[] = [];
+  const re = new RegExp(`${prop}=["'\`]([A-Za-z-]+)["'\`]`, "g");
+  for (const file of walk(root)) {
+    const src = readFileSync(file, "utf8");
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(src)) !== null) {
+      if (!allowed.has(m[1])) offenders.push(`${file}: ${m[1]}`);
     }
+  }
+  return offenders;
+}
+
+describe("accessibility native prop values", () => {
+  test("accessibilityRole values are accepted by iOS native", () => {
+    const offenders = scanProp("accessibilityRole", VALID_IOS_ROLES);
+    expect(offenders).toEqual([]);
+  });
+  test("role values are valid ARIA roles", () => {
+    const offenders = scanProp("role", VALID_ARIA_ROLES);
+    expect(offenders).toEqual([]);
+  });
+  test("accessibilityLiveRegion values are valid", () => {
+    const offenders = scanProp("accessibilityLiveRegion", VALID_LIVE_REGIONS);
+    expect(offenders).toEqual([]);
+  });
+  test("importantForAccessibility values are valid", () => {
+    const offenders = scanProp("importantForAccessibility", VALID_IMPORTANT);
     expect(offenders).toEqual([]);
   });
 });

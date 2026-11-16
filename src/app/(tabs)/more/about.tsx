@@ -2,13 +2,16 @@ import { ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import Constants from "expo-constants";
 import { radius, spacing, typography, useThemeColors } from "../../../constants/theme";
 import { hapticTick } from "../../../lib/haptics";
-import { t } from "../../../lib/i18n";
+import { t, useLocale } from "../../../lib/i18n";
+import { toBanglaDigits } from "../../../lib/digits";
 import { TonalButton } from "../../../components/TonalButton";
 
 export default function AboutScreen() {
   const { colors } = useThemeColors();
+  const locale = useLocale();
   const name = Constants.expoConfig?.name ?? "Ana Gonda Calculator";
   const version = Constants.expoConfig?.version ?? "1.0.0";
+  const versionText = locale === "bn" ? toBanglaDigits(version) : version;
 
   const handleShare = () => {
     hapticTick();
@@ -24,7 +27,7 @@ export default function AboutScreen() {
         <Text style={[styles.caption, { color: colors.onSurfaceVariant }]}>{t("about")}</Text>
         <View style={styles.row}>
           <Text style={[styles.name, { color: colors.onSurface }]}>{name}</Text>
-          <Text style={[styles.version, { color: colors.onSurfaceVariant }]}>v{version}</Text>
+          <Text style={[styles.version, { color: colors.onSurfaceVariant }]}>v{versionText}</Text>
         </View>
         <Text style={[styles.note, { color: colors.onSurfaceVariant }]}>
           {t("about_on_device")}

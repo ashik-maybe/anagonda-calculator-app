@@ -157,7 +157,7 @@ export const SHAPE_ORDER: readonly ShapeId[] = [
   "semicircle",
 ];
 
-const FIELDS: Record<ShapeId, readonly string[]> = {
+export const SHAPE_FIELDS: Record<ShapeId, readonly string[]> = {
   quad: ["len_1", "len_2", "width_1", "width_2"],
   square: ["side"],
   trapezoid: ["side_a", "side_b", "height"],
@@ -169,7 +169,12 @@ const FIELDS: Record<ShapeId, readonly string[]> = {
 
 /** Field ids the picker renders inputs for, per shape. */
 export function shapeFields(shape: ShapeId): readonly string[] {
-  return FIELDS[shape];
+  return SHAPE_FIELDS[shape];
+}
+
+/** i18n key suffix for a shape id (camelCase -> snake_case): "rightTriangle" -> "right_triangle". */
+export function shapeKey(id: ShapeId): string {
+  return id.replace(/([A-Z])/g, (c) => `_${c.toLowerCase()}`);
 }
 
 /** Strict triangle inequality; degenerate (equality) rejected. */

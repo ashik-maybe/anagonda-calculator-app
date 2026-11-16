@@ -10,6 +10,7 @@ import {
   shapeArea,
   shapeFields,
   shapeFromFields,
+  shapeKey,
   type ShapeId,
   type ShapeResult,
 } from "../../lib/shapes";
@@ -135,7 +136,7 @@ export default function PorimapScreen() {
               }}
               accessibilityRole="button"
               accessibilityState={{ selected }}
-              accessibilityLabel={t(`shape_${id}`)}
+              accessibilityLabel={t(`shape_${shapeKey(id)}`)}
             >
               <ShapeGlyph
                 shape={id}
@@ -150,7 +151,7 @@ export default function PorimapScreen() {
                   fontFamily: typography.fonts.bengali,
                 }}
               >
-                {t(`shape_${id}`)}
+                {t(`shape_${shapeKey(id)}`)}
               </Text>
             </Pressable>
           );
@@ -179,7 +180,7 @@ export default function PorimapScreen() {
               onChangeText={(s) => setInputs((prev) => ({ ...prev, [field]: s }))}
               error={raw !== "" && !valid ? t("err_positive") : null}
               keyboardType="decimal-pad"
-              placeholder="0.00"
+              placeholder={locale === "bn" ? "০.০০" : "0.00"}
               accessibilityHint={t(`field_${field}`)}
             />
           );
