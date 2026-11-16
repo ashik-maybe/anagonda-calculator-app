@@ -29,6 +29,7 @@ export function SegmentedControl({
         return (
           <Pressable
             accessibilityRole="segment"
+            accessibilityLabel={segment.label}
             accessibilityState={{ selected }}
             key={segment.key}
             onPress={() => onChange(segment.key)}

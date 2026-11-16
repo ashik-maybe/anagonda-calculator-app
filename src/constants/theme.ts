@@ -58,7 +58,7 @@ export const colorsLight: ThemeColors = {
   onError: "#FFFFFF",
   errorContainer: "#F9DEDC",
   onErrorContainer: "#410E0B",
-  success: "#1E8E3E",
+  success: "#1B7A38",
   onSuccess: "#FFFFFF",
   successContainer: "#B8E6C5",
   onSuccessContainer: "#00391B",

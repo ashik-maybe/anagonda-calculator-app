@@ -157,7 +157,7 @@ function makeStyles(colors: ReturnType<typeof useThemeColors>["colors"]) {
       flex: 1,
       fontFamily: typography.fonts.bengali,
       fontSize: 15,
-      minHeight: 44,
+      minHeight: 48,
     },
     areaText: {
       color: colors.onSurface,

@@ -152,6 +152,7 @@ export function ReverseForm({ prefill }: Props) {
             <Pressable
               key={id}
               accessibilityRole="button"
+              accessibilityLabel={t(`unit_${id}`)}
               accessibilityState={{ selected }}
               onPress={() => {
                 setUnit(id);

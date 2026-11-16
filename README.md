@@ -1,56 +1,58 @@
-# Welcome to your Expo app 👋
+# আনা-গন্ডা ক্যালকুলেটর (Ana-Gonda Calculator)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> ১০ আনা = কত শতাংশ? — উত্তর পকেটেই।
 
-## Get started
+A Bengali land calculator for Bangladesh: exact-fraction shares in the 16-আনা system,
+land measurement, multi-owner বণ্টন, বিপরীত decomposition, and an offline unit
+encyclopedia — bn/en, dark mode, zero ads, zero network, zero accounts.
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+- **হিস্যা (Hisab)** — ana/gonda/kora/kranti/til shares as exact BigInt rationals; the
+  deed-format result card shows the total as a fraction, never a rounded decimal.
+- **বিপরীত (Reverse)** — total land → greedy 16-ana decomposition for the document.
+- **বণ্টন (Split)** — multi-owner ledger with live share bars; Σ≠১৬ আনা blocks in red.
+- **পরিমাপ (Measure)** — 7 shapes on a shared symbolic engine (exact √, π kept symbolic).
+- **আরও (More)** — unit encyclopedia (cited, live custom কাঠা/বিঘা rates), খতিয়ান glossary
+  with the দলিল symbol guide (⁄ ৵ ৶ ৷ ৸ ৴ …), licenses, about, settings, history.
+- Custom কাঠা/বিঘা rates persisted on-device; settings (theme/locale/haptics) persisted.
 
-2. Start the app
+Everything runs offline in the app binary. No ads, no tracking, no OTA, no permissions
+beyond storage for your own history/rates/settings.
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Commands (bun)
 
 ```bash
-npm run reset-project
+bun install            # or: npm install
+bun run start          # expo start (dev server)
+bun run lint           # oxlint + WCAG contrast gate (scripts/contrast-check.mjs)
+bun run format:check   # oxfmt --check
+bunx tsc --noEmit      # typecheck
+bun test               # 174 tests / 821 asserts incl. engine golden vectors
+bunx expo-doctor       # dependency/config diagnostics
+bunx expo prebuild --no-install
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Layout
 
-### Other setup steps
+```
+src/app/            Expo Router routes (tabs: হোম · হিসাব · পরিমাপ · আরও + stack screens)
+src/lib/            engines: fraction (BigInt rational) · units · share · shapes ·
+                    decomposition · digits · i18n · storage · settings · haptics
+src/data/           units.json (cited) · glossary.json · ofl.ts (verbatim license)
+src/components/     TonalButton · InputCard · SegmentedControl · ResultCard · …
+src/i18n/           bn.json · en.json (content lives here; bn mode = Bangla digits)
+src/constants/      theme.ts (tokens + ThemePreference store)
+assets/fonts/       Noto Sans Bengali · Noto Sans · Baloo Da 2 (SIL OFL — see LICENSES)
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Rules: English identifiers; Bengali only in `src/i18n/*.json` + rendered UI; parsers accept
+both digit sets; inline errors only (no alerts); 48dp touch targets; every `Pressable`
+carries an accessibility role/label; token contrast ≥ 4.5:1 in both schemes (gated by
+`scripts/contrast-check.mjs`).
 
-## Learn more
+## License
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+App code: MIT. Fonts: SIL Open Font License 1.1 (full text embedded in-app under
+আরও → লাইসেন্স, verbatim in `src/data/ofl.ts`). Third-party licenses are listed on the
+same screen; only actually-bundled dependencies are named.

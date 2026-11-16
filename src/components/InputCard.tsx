@@ -72,7 +72,7 @@ function makeStyles(colors: ReturnType<typeof useThemeColors>["colors"]) {
       color: colors.onSurface,
       fontFamily: typography.fonts.bengali,
       fontSize: typography.sizes[4],
-      minHeight: 44,
+      minHeight: 48,
     },
     messageRow: { alignItems: "center", flexDirection: "row", gap: spacing[0] },
     error: {
