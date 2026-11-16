@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import * as Clipboard from "expo-clipboard";
-import { Check, X } from "lucide-react-native";
+import { ArrowLeftRight, Check, X } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
 import { absoluteUnitIds, unitFactor, type AbsoluteUnitId } from "../../lib/units";
@@ -143,6 +143,24 @@ export default function ConvertScreen() {
         </View>
       </ScrollView>
 
+      {rows && rows.length > 0 ? (
+        <Pressable
+          accessibilityLabel={t("convert_swap")}
+          accessibilityRole="button"
+          onPress={() => {
+            const next = rows.find((r) => r.unit !== from);
+            if (!next) return;
+            setRaw(next.value);
+            setFrom(next.unit);
+            hapticTick();
+          }}
+          style={({ pressed }) => [styles.swapButton, pressed && { opacity: 0.7 }]}
+        >
+          <ArrowLeftRight color={colors.primary} size={18} />
+          <Text style={[styles.swapLabel, { color: colors.primary }]}>{t("convert_swap")}</Text>
+        </Pressable>
+      ) : null}
+
       {custom ? (
         <Text style={[styles.badge, { color: colors.onSurfaceVariant }]}>{t("rates_badge")}</Text>
       ) : null}
@@ -214,4 +232,18 @@ const styles = StyleSheet.create({
   rowValue: { flexDirection: "row", alignItems: "center", gap: spacing[1] },
   value: { fontSize: 16, fontWeight: "600" },
   hint: { fontSize: 14, textAlign: "center" },
+  swapButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing[1],
+    minHeight: 44,
+    alignSelf: "center",
+    paddingHorizontal: spacing[3],
+  },
+  swapLabel: {
+    fontFamily: typography.fonts.bengali,
+    fontSize: typography.sizes[2],
+    fontWeight: "600",
+  },
 });

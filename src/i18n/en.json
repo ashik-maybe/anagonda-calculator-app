@@ -150,5 +150,6 @@
   "retry": "Retry",
   "onboarding_replay": "Replay onboarding",
   "unit_hat": "Hat",
-  "unit_meter": "Meter"
+  "unit_meter": "Meter",
+  "convert_swap": "Use result as input"
 }
