@@ -1,75 +1,148 @@
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { radius, spacing, typography, useThemeColors } from "../../../constants/theme";
 import { t, useLocale } from "../../../lib/i18n";
+import { GLOSSARY_CATEGORIES, type GlossaryCategory, searchTerms } from "../../../lib/terms";
 import { InputCard } from "../../../components/InputCard";
-import glossary from "../../../data/glossary.json";
+import { TermSheet } from "../../../components/TermSheet";
+
+type CategoryFilter = GlossaryCategory | "all";
 
 export default function GlossaryScreen() {
   const { colors } = useThemeColors();
   const locale = useLocale();
   const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<CategoryFilter>("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return glossary.terms;
-    return glossary.terms.filter((term) =>
-      [term.term_bn, term.term_en, term.code, term.def_bn, term.def_en]
-        .join("\n")
-        .toLowerCase()
-        .includes(q),
-    );
-  }, [query]);
+    const byQuery = searchTerms(query);
+    return category === "all" ? byQuery : byQuery.filter((term) => term.category === category);
+  }, [query, category]);
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
-      style={{ flex: 1, backgroundColor: colors.background }}
-    >
-      <InputCard
-        accessibilityHint={t("glossary")}
-        keyboardType="default"
-        label={t("glossary")}
-        onChangeText={setQuery}
-        placeholder={t("search")}
-        value={query}
-      />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={styles.chipRow}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
+          <CategoryChip
+            key="all"
+            label={t("term_sheet_all")}
+            selected={category === "all"}
+            onPress={() => setCategory("all")}
+          />
+          {GLOSSARY_CATEGORIES.map((cat) => (
+            <CategoryChip
+              key={cat.key}
+              label={t(cat.labelKey)}
+              selected={category === cat.key}
+              onPress={() => setCategory(cat.key)}
+            />
+          ))}
+        </ScrollView>
 
-      {filtered.length === 0 ? (
-        <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
-          <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
-            {t("glossary_empty")}
-          </Text>
-        </View>
-      ) : (
-        filtered.map((term) => (
-          <View
-            key={term.id}
-            style={[
-              styles.card,
-              { backgroundColor: colors.surfaceVariant, borderColor: colors.outlineVariant },
-            ]}
-          >
-            <View style={styles.headerRow}>
-              <Text style={[styles.termBn, { color: colors.onSurface }]}>{term.term_bn}</Text>
-              <Text
-                style={[
-                  styles.codeChip,
-                  { color: colors.onSurfaceVariant, backgroundColor: colors.surface },
-                ]}
-              >
-                {term.code}
-              </Text>
-            </View>
-            <Text style={[styles.termEn, { color: colors.onSurfaceVariant }]}>{term.term_en}</Text>
-            <Text style={[styles.definition, { color: colors.onSurface }]}>
-              {locale === "bn" ? term.def_bn : term.def_en}
+        <InputCard
+          accessibilityHint={t("glossary")}
+          keyboardType="default"
+          label={t("glossary")}
+          onChangeText={setQuery}
+          placeholder={t("search")}
+          value={query}
+        />
+
+        {filtered.length === 0 ? (
+          <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
+            <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
+              {t("glossary_empty")}
             </Text>
           </View>
-        ))
-      )}
-    </ScrollView>
+        ) : (
+          filtered.map((term) => (
+            <Pressable
+              key={term.id}
+              accessibilityRole="button"
+              onPress={() => setSelectedId(term.id)}
+              style={({ pressed }) => [
+                styles.card,
+                {
+                  backgroundColor: pressed ? colors.primaryContainer : colors.surfaceVariant,
+                  borderColor: colors.outlineVariant,
+                },
+              ]}
+            >
+              <View style={styles.headerRow}>
+                <Text style={[styles.termBn, { color: colors.onSurface }]}>{term.term_bn}</Text>
+                <Text
+                  style={[
+                    styles.codeChip,
+                    { color: colors.onSurfaceVariant, backgroundColor: colors.surface },
+                  ]}
+                >
+                  {term.code}
+                </Text>
+              </View>
+              <Text style={[styles.termEn, { color: colors.onSurfaceVariant }]}>
+                {term.term_en}
+              </Text>
+              {term.aliases && term.aliases.length > 0 ? (
+                <Text style={[styles.aliases, { color: colors.onSurfaceVariant }]}>
+                  {t("glossary_aliases")}: {term.aliases.join(", ")}
+                </Text>
+              ) : null}
+              <Text style={[styles.definition, { color: colors.onSurface }]}>
+                {locale === "bn" ? term.def_bn : term.def_en}
+              </Text>
+            </Pressable>
+          ))
+        )}
+      </ScrollView>
+
+      <TermSheet termId={selectedId} onClose={() => setSelectedId(null)} />
+    </View>
+  );
+}
+
+function CategoryChip({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  const { colors } = useThemeColors();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={[
+        styles.chip,
+        {
+          backgroundColor: selected ? colors.primaryContainer : "transparent",
+          borderColor: selected ? colors.primary : colors.outlineVariant,
+        },
+      ]}
+    >
+      <Text
+        style={{
+          color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+          fontFamily: typography.fonts.bengali,
+          fontSize: typography.sizes[1],
+          fontWeight: selected ? "600" : "400",
+        }}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -78,6 +151,17 @@ const styles = StyleSheet.create({
     gap: spacing[3],
     padding: spacing[3],
     paddingBottom: spacing[5],
+  },
+  chipRow: {
+    flexDirection: "row",
+    gap: spacing[2],
+    paddingBottom: spacing[1],
+  },
+  chip: {
+    borderRadius: radius.full,
+    borderWidth: 1,
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[1],
   },
   card: {
     borderRadius: radius.md,
@@ -107,6 +191,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   termEn: {
+    fontFamily: typography.fonts.bengali,
+    fontSize: 12,
+  },
+  aliases: {
     fontFamily: typography.fonts.bengali,
     fontSize: 12,
   },

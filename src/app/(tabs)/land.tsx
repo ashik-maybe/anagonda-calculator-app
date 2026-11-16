@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { CircleAlert, Ruler, Trash2 } from "lucide-react-native";
+import { CircleAlert, Ruler } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
 import {
@@ -15,16 +15,19 @@ import {
   type ShapeId,
   type ShapeResult,
 } from "../../lib/shapes";
-import { cmp, div, frac, mul, parseDecimal, ZERO, type Fraction } from "../../lib/fraction";
-import { convert, unitFactor } from "../../lib/units";
-import { conversionStrip, formatLand } from "../../lib/deed";
+import { cmp, frac, mul, parseDecimal, ZERO, type Fraction } from "../../lib/fraction";
 import { insertHistory } from "../../lib/storage";
 import { hapticSuccess, hapticTick } from "../../lib/haptics";
-import { plotLabel, totalArea, type Plot } from "../../lib/worksheet";
+import { totalArea, type Plot } from "../../lib/worksheet";
 import { ShapeGlyph } from "../../components/ShapeGlyphs";
 import { InputCard } from "../../components/InputCard";
 import { TonalButton } from "../../components/TonalButton";
-import { useRates } from "../../components/RatesProvider";
+import { SegmentedControl } from "../../components/SegmentedControl";
+import { ShapePreview } from "../../components/ShapePreview";
+import { Worksheet } from "../../components/Worksheet";
+import { BnText } from "../../components/BnText";
+import { EmptyState } from "../../components/EmptyState";
+import { AreaCard } from "../../components/AreaCard";
 
 /**
  * A field counts as valid when its raw text parses as a decimal and is
@@ -35,136 +38,6 @@ const fieldValid = (raw: string): boolean => {
   const parsed = parseDecimal(raw.trim());
   return parsed !== null && cmp(parsed, ZERO) > 0;
 };
-
-/** Area display in square feet, square metres, and the shoto/katha/bigha/acre strip. */
-function AreaCard({
-  heading,
-  areaSqft,
-  showRates = false,
-}: {
-  readonly heading: string;
-  readonly areaSqft: Fraction;
-  readonly showRates?: boolean;
-}) {
-  const { colors } = useThemeColors();
-  const locale = useLocale();
-  const { rates, isCustom } = useRates();
-
-  return (
-    <View
-      style={{
-        backgroundColor: colors.surface,
-        borderColor: colors.outlineVariant,
-        borderWidth: 1,
-        borderRadius: radius.lg,
-        padding: spacing[4],
-        gap: spacing[3],
-      }}
-    >
-      {/* Tier 1 — square feet */}
-      <View style={{ alignItems: "center", gap: spacing[0] }}>
-        <Text
-          style={{
-            color: colors.onSurfaceVariant,
-            fontSize: 12,
-            fontWeight: "600",
-            letterSpacing: 1,
-            textTransform: "uppercase",
-            textAlign: "center",
-            fontFamily: typography.fonts.bengali,
-          }}
-        >
-          {heading}
-        </Text>
-        <Text
-          style={{
-            color: colors.onSurface,
-            fontSize: 40,
-            fontWeight: "700",
-            fontFamily: typography.fonts.display,
-            textAlign: "center",
-          }}
-        >
-          {formatLand(areaSqft, 2, locale)}
-          <Text
-            style={{
-              fontSize: 16,
-              color: colors.onSurfaceVariant,
-              fontFamily: typography.fonts.bengali,
-            }}
-          >
-            {" "}
-            {t("unit_sqft")}
-          </Text>
-        </Text>
-      </View>
-
-      {/* Tier 2 — m² equivalent */}
-      <Text
-        style={{
-          color: colors.onSurface,
-          fontSize: 15,
-          textAlign: "center",
-          fontFamily: typography.fonts.bengali,
-        }}
-      >
-        {formatLand(convert(areaSqft, "sqft", "sqm", rates), 2, locale)} {t("unit_sqm")}
-      </Text>
-
-      {/* Tier 3 — conversion strip (shoto/katha/bigha/acre) */}
-      <View style={{ flexDirection: "row" }}>
-        {conversionStrip(div(areaSqft, unitFactor("shoto", rates)), rates, locale).map(
-          (item, index) => (
-            <View
-              key={item.unit}
-              style={{
-                flex: 1,
-                alignItems: "center",
-                paddingVertical: spacing[2],
-                borderLeftWidth: index === 0 ? 0 : 1,
-                borderLeftColor: colors.outlineVariant,
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.onSurface,
-                  fontSize: 16,
-                  fontWeight: "700",
-                  fontFamily: typography.fonts.bengali,
-                }}
-              >
-                {item.value}
-              </Text>
-              <Text
-                style={{
-                  color: colors.onSurfaceVariant,
-                  fontSize: 12,
-                  fontWeight: "600",
-                  fontFamily: typography.fonts.bengali,
-                }}
-              >
-                {t(`unit_${item.unit}`)}
-              </Text>
-            </View>
-          ),
-        )}
-      </View>
-
-      {showRates && isCustom ? (
-        <Text
-          style={{
-            color: colors.onSurfaceVariant,
-            fontSize: 12,
-            textAlign: "center",
-            fontFamily: typography.fonts.bengali,
-          }}
-        >
-          {t("rates_badge")}
-        </Text>
-      ) : null}
-    </View>
-  );
-}
 
 const VALID_SHAPES = new Set<ShapeId>(SHAPE_ORDER);
 
@@ -225,6 +98,7 @@ export default function LandScreen() {
   const [shape, setShape] = useState<ShapeId>("quad");
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [inputUnit, setInputUnit] = useState<string>("ft");
+  const [view, setView] = useState<"measure" | "worksheet">("measure");
   const [plots, setPlots] = useState<Plot[]>([]);
   const [savedNote, setSavedNote] = useState(false);
   const nextPlotId = useRef(0);
@@ -293,6 +167,7 @@ export default function LandScreen() {
   }, [compute]);
 
   const total = useMemo(() => totalArea(plots), [plots]);
+  const hasAnyInput = fields.some((field) => (inputs[field] ?? "").trim() !== "");
 
   const triangleBlocked = compute !== null && shape === "triangle" && !compute.res.ok;
 
@@ -363,311 +238,246 @@ export default function LandScreen() {
         }}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Shape picker — wrapping chip row of 11 glyphs */}
-        <View
-          accessibilityRole="radiogroup"
-          style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}
-        >
-          {SHAPE_ORDER.map((id) => {
-            const selected = id === shape;
-            return (
-              <Pressable
-                key={id}
-                onPress={() => {
-                  setShape(id);
-                  hapticTick();
-                }}
-                style={{
-                  minHeight: 56,
-                  minWidth: 68,
-                  paddingHorizontal: spacing[2],
-                  borderRadius: radius.md,
-                  borderWidth: 1,
-                  borderColor: selected ? colors.primary : colors.outlineVariant,
-                  backgroundColor: selected ? colors.primaryContainer : colors.surfaceVariant,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: spacing[0],
-                }}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                accessibilityLabel={t(`shape_${shapeKey(id)}`)}
-              >
-                <ShapeGlyph
-                  shape={id}
-                  size={28}
-                  color={selected ? colors.onPrimaryContainer : colors.onSurfaceVariant}
-                />
-                <Text
-                  style={{
-                    color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
-                    fontSize: 13,
-                    fontWeight: selected ? "600" : "400",
-                    fontFamily: typography.fonts.bengali,
-                  }}
-                >
-                  {t(`shape_${shapeKey(id)}`)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Per-shape dimension inputs (feet) */}
-        <Text
-          style={{
-            color: colors.onSurfaceVariant,
-            fontSize: 12,
-            fontFamily: typography.fonts.bengali,
+        <SegmentedControl
+          accessibilityLabel={t("land_measure")}
+          onChange={(key) => {
+            setView(key === "worksheet" ? "worksheet" : "measure");
           }}
-        >
-          মাপের একক
-        </Text>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
-          {(["ft", "hat", "link", "meter"] as const).map((u) => {
-            const selected = u === inputUnit;
-            const label =
-              u === "ft"
-                ? t("unit_ft")
-                : u === "hat"
-                  ? t("unit_hat")
-                  : u === "link"
-                    ? t("unit_link")
-                    : t("unit_meter");
-            return (
-              <Pressable
-                key={u}
-                accessibilityRole="button"
-                accessibilityLabel={label}
-                accessibilityState={{ selected }}
-                onPress={() => {
-                  setInputUnit(u);
-                  hapticTick();
-                }}
-                style={{
-                  minHeight: 48,
-                  paddingHorizontal: spacing[3],
-                  paddingVertical: spacing[1],
-                  borderRadius: radius.full,
-                  borderWidth: 1,
-                  borderColor: selected ? colors.primary : colors.outlineVariant,
-                  backgroundColor: selected ? colors.primaryContainer : "transparent",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
-                    fontFamily: typography.fonts.bengali,
-                    fontSize: typography.sizes[1],
-                    fontWeight: selected ? "600" : "400",
-                  }}
-                >
-                  {label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <View style={{ gap: spacing[2] }}>
-          {fields.map((field) => {
-            const raw = inputs[field] ?? "";
-            const valid = fieldValid(raw);
-            return (
-              <InputCard
-                key={`${shape}-${field}`}
-                label={t(`field_${field}`)}
-                value={raw}
-                onChangeText={(s) => setInputs((prev) => ({ ...prev, [field]: s }))}
-                error={raw !== "" && !valid ? t("err_positive") : null}
-                keyboardType="decimal-pad"
-                placeholder={locale === "bn" ? "০.০০" : "0.00"}
-                accessibilityHint={t(`field_${field}`)}
-              />
-            );
-          })}
-        </View>
-
-        {liveSqft !== null ? (
+          segments={[
+            { key: "measure", label: t("land_measure") },
+            { key: "worksheet", label: t("land_worksheet") },
+          ]}
+          value={view}
+        />
+        {view === "measure" ? (
           <>
-            {savedNote ? (
-              <Text
-                accessibilityLiveRegion="polite"
-                style={{
-                  color: colors.success,
-                  fontSize: 13,
-                  fontWeight: "600",
-                  textAlign: "center",
-                  fontFamily: typography.fonts.bengali,
-                }}
-              >
-                {t("history_saved")}
-              </Text>
-            ) : null}
-            <AreaCard heading={t("live_area")} areaSqft={liveSqft} showRates />
-            <TonalButton
-              label={t("worksheet_add")}
-              variant="tonal"
-              onPress={addPlot}
-              disabled={liveSqft === null}
-            />
-          </>
-        ) : triangleBlocked ? (
-          <View
-            style={{
-              borderWidth: 1,
-              borderStyle: "dashed",
-              borderColor: colors.error,
-              borderRadius: radius.md,
-              paddingVertical: spacing[5],
-              alignItems: "center",
-              gap: spacing[2],
-            }}
-          >
-            <CircleAlert color={colors.error} size={28} />
-            <Text
-              style={{
-                color: colors.error,
-                fontSize: 14,
-                textAlign: "center",
-                fontFamily: typography.fonts.bengali,
-              }}
+            {/* Shape picker — wrapping chip row of 11 glyphs */}
+            <View
+              accessibilityRole="radiogroup"
+              style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}
             >
-              {t("err_triangle")}
-            </Text>
-          </View>
-        ) : (
-          <View
-            style={{
-              borderWidth: 1,
-              borderStyle: "dashed",
-              borderColor: colors.outlineVariant,
-              borderRadius: radius.md,
-              paddingVertical: spacing[5],
-              alignItems: "center",
-              gap: spacing[2],
-            }}
-          >
-            <Ruler color={colors.onSurfaceVariant} size={28} />
-            <Text
-              style={{
-                color: colors.onSurfaceVariant,
-                fontSize: 14,
-                textAlign: "center",
-                fontFamily: typography.fonts.bengali,
-              }}
-            >
-              {t("porimap_empty_hint")}
-            </Text>
-          </View>
-        )}
+              {SHAPE_ORDER.map((id) => {
+                const selected = id === shape;
+                return (
+                  <Pressable
+                    key={id}
+                    onPress={() => {
+                      setShape(id);
+                      hapticTick();
+                    }}
+                    style={{
+                      minHeight: 56,
+                      minWidth: 68,
+                      paddingHorizontal: spacing[2],
+                      borderRadius: radius.md,
+                      borderWidth: 1,
+                      borderColor: selected ? colors.primary : colors.outlineVariant,
+                      backgroundColor: selected ? colors.primaryContainer : colors.surfaceVariant,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: spacing[0],
+                    }}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={t(`shape_${shapeKey(id)}`)}
+                  >
+                    <ShapeGlyph
+                      shape={id}
+                      size={28}
+                      color={selected ? colors.onPrimaryContainer : colors.onSurfaceVariant}
+                    />
+                    <Text
+                      style={{
+                        color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                        fontSize: 13,
+                        fontWeight: selected ? "600" : "400",
+                        fontFamily: typography.fonts.bengali,
+                      }}
+                    >
+                      {t(`shape_${shapeKey(id)}`)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
 
-        {plots.length > 0 ? (
-          <View style={{ gap: spacing[2] }}>
+            {/* Per-shape dimension inputs (feet) */}
             <Text
               style={{
                 color: colors.onSurfaceVariant,
                 fontSize: 12,
-                fontWeight: "600",
-                letterSpacing: 1,
-                textTransform: "uppercase",
                 fontFamily: typography.fonts.bengali,
               }}
             >
-              {t("worksheet_title")}
+              মাপের একক
             </Text>
-
-            <View
-              style={{
-                backgroundColor: colors.surface,
-                borderColor: colors.outlineVariant,
-                borderWidth: 1,
-                borderRadius: radius.lg,
-                paddingHorizontal: spacing[3],
-              }}
-            >
-              {plots.map((plot, index) => (
-                <View
-                  key={plot.id}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: spacing[2],
-                    paddingVertical: spacing[2],
-                    borderBottomWidth: index === plots.length - 1 ? 0 : 1,
-                    borderBottomColor: colors.outlineVariant,
-                  }}
-                >
-                  <ShapeGlyph shape={plot.shape} size={22} color={colors.onSurfaceVariant} />
-                  <View style={{ flex: 1, gap: spacing[0] }}>
-                    <Text
-                      style={{
-                        color: colors.onSurface,
-                        fontSize: 14,
-                        fontWeight: "600",
-                        fontFamily: typography.fonts.bengali,
-                      }}
-                    >
-                      {plotLabel(plot, locale)}
-                    </Text>
-                    <Text
-                      style={{
-                        color: colors.onSurfaceVariant,
-                        fontSize: 13,
-                        fontFamily: typography.fonts.bengali,
-                      }}
-                    >
-                      {formatLand(plot.areaSqft, 2, locale)} {t("unit_sqft")}
-                    </Text>
-                  </View>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
+              {(["ft", "hat", "link", "meter"] as const).map((u) => {
+                const selected = u === inputUnit;
+                const label =
+                  u === "ft"
+                    ? t("unit_ft")
+                    : u === "hat"
+                      ? t("unit_hat")
+                      : u === "link"
+                        ? t("unit_link")
+                        : t("unit_meter");
+                return (
                   <Pressable
+                    key={u}
                     accessibilityRole="button"
-                    accessibilityLabel={`${t("worksheet_remove")}: ${plotLabel(plot, locale)}`}
-                    hitSlop={8}
-                    onPress={() => removePlot(plot.id)}
+                    accessibilityLabel={label}
+                    accessibilityState={{ selected }}
+                    onPress={() => {
+                      setInputUnit(u);
+                      hapticTick();
+                    }}
                     style={{
-                      width: 44,
-                      height: 44,
+                      minHeight: 48,
+                      paddingHorizontal: spacing[3],
+                      paddingVertical: spacing[1],
+                      borderRadius: radius.full,
+                      borderWidth: 1,
+                      borderColor: selected ? colors.primary : colors.outlineVariant,
+                      backgroundColor: selected ? colors.primaryContainer : "transparent",
                       alignItems: "center",
                       justifyContent: "center",
-                      borderRadius: radius.full,
                     }}
                   >
-                    <Trash2 size={20} color={colors.error} />
+                    <Text
+                      style={{
+                        color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                        fontFamily: typography.fonts.bengali,
+                        fontSize: typography.sizes[1],
+                        fontWeight: selected ? "600" : "400",
+                      }}
+                    >
+                      {label}
+                    </Text>
                   </Pressable>
-                </View>
-              ))}
+                );
+              })}
+            </View>
+            <View style={{ gap: spacing[2] }}>
+              <ShapePreview shape={shape} />
+              {fields.map((field) => {
+                const raw = inputs[field] ?? "";
+                const valid = fieldValid(raw);
+                return (
+                  <InputCard
+                    key={`${shape}-${field}`}
+                    label={t(`field_${field}`)}
+                    value={raw}
+                    onChangeText={(s) => setInputs((prev) => ({ ...prev, [field]: s }))}
+                    error={raw !== "" && !valid ? t("err_positive") : null}
+                    keyboardType="decimal-pad"
+                    placeholder={locale === "bn" ? "০.০০" : "0.00"}
+                    accessibilityHint={t(`field_${field}`)}
+                  />
+                );
+              })}
             </View>
 
-            <View style={{ alignItems: "flex-end" }}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t("history_clear")}
-                onPress={clearPlots}
-                style={({ pressed }) => ({
-                  minHeight: 44,
-                  paddingHorizontal: spacing[2],
-                  justifyContent: "center",
-                  opacity: pressed ? 0.6 : 1,
-                })}
+            {liveSqft !== null ? (
+              <>
+                {savedNote ? (
+                  <Text
+                    accessibilityLiveRegion="polite"
+                    style={{
+                      color: colors.success,
+                      fontSize: 13,
+                      fontWeight: "600",
+                      textAlign: "center",
+                      fontFamily: typography.fonts.bengali,
+                    }}
+                  >
+                    {t("history_saved")}
+                  </Text>
+                ) : null}
+                <AreaCard heading={t("live_area")} areaSqft={liveSqft} showRates />
+                <BnText
+                  variant="caption"
+                  style={{ color: colors.onSurfaceVariant, textAlign: "center" }}
+                >
+                  {t("land_result_unit")}: {t("unit_sqft")}
+                </BnText>
+                <TonalButton
+                  label={t("worksheet_add")}
+                  variant="tonal"
+                  onPress={addPlot}
+                  disabled={liveSqft === null}
+                />
+              </>
+            ) : triangleBlocked ? (
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderStyle: "dashed",
+                  borderColor: colors.error,
+                  borderRadius: radius.md,
+                  paddingVertical: spacing[5],
+                  alignItems: "center",
+                  gap: spacing[2],
+                }}
               >
+                <CircleAlert color={colors.error} size={28} />
                 <Text
                   style={{
                     color: colors.error,
-                    fontSize: 13,
-                    fontWeight: "600",
+                    fontSize: 14,
+                    textAlign: "center",
                     fontFamily: typography.fonts.bengali,
                   }}
                 >
-                  {t("history_clear")}
+                  {t("err_triangle")}
                 </Text>
-              </Pressable>
-            </View>
-
-            <AreaCard heading={t("worksheet_total")} areaSqft={total} />
-          </View>
-        ) : null}
+              </View>
+            ) : hasAnyInput ? (
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderStyle: "dashed",
+                  borderColor: colors.outlineVariant,
+                  borderRadius: radius.md,
+                  paddingVertical: spacing[5],
+                  alignItems: "center",
+                  gap: spacing[2],
+                }}
+              >
+                <Ruler color={colors.onSurfaceVariant} size={28} />
+                <Text
+                  style={{
+                    color: colors.onSurfaceVariant,
+                    fontSize: 14,
+                    textAlign: "center",
+                    fontFamily: typography.fonts.bengali,
+                  }}
+                >
+                  {t("porimap_empty_hint")}
+                </Text>
+              </View>
+            ) : (
+              <EmptyState
+                icon={<Ruler color={colors.onSurfaceVariant} size={28} />}
+                title={t("land_empty_example")}
+                hint={t("porimap_empty_hint")}
+                onExample={() => {
+                  setShape("rectangle");
+                  setInputs({ length: "20", width: "36" });
+                  hapticTick();
+                }}
+              />
+            )}
+          </>
+        ) : (
+          <Worksheet
+            plots={plots}
+            onRemove={removePlot}
+            onClear={clearPlots}
+            total={total}
+            locale={locale}
+          />
+        )}
 
         <View style={{ flexDirection: "row", gap: spacing[2] }}>
           <View style={{ flex: 1 }}>

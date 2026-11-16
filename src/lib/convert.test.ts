@@ -17,6 +17,35 @@ describe("convert.parseInput", () => {
   test("accepts zero", () => {
     expect(parseInput("0")).toEqual(frac(0));
   });
+  test("accepts lakh-style commas (latin and bangla digits)", () => {
+    expect(parseInput("1,440")).toEqual(frac(1440));
+    expect(parseInput("1,44,000")).toEqual(frac(144000));
+    expect(parseInput("12,34,56,789")).toEqual(frac(123456789));
+    expect(parseInput("১,৪৪০")).toEqual(frac(1440));
+    expect(parseInput("১,৪৪,০০০")).toEqual(frac(144000));
+  });
+  test("accepts grouped decimals", () => {
+    expect(parseInput("1,44,000.5")).toEqual(parseDecimal("144000.5"));
+  });
+  test("accepts a simple fraction a/b", () => {
+    expect(parseInput("1/2")).toEqual(frac(1, 2));
+    expect(parseInput("১/২")).toEqual(frac(1, 2));
+    expect(parseInput("3/4")).toEqual(frac(3, 4));
+    expect(parseInput(" 1 / 2 ")).toEqual(frac(1, 2));
+  });
+  test("rejects malformed commas and fractions", () => {
+    expect(parseInput("1,")).toBeNull();
+    expect(parseInput(",1")).toBeNull();
+    expect(parseInput("1,,440")).toBeNull();
+    expect(parseInput("1234,5")).toBeNull();
+    expect(parseInput("১,৪৪,০")).toBeNull();
+    expect(parseInput("1/0")).toBeNull();
+    expect(parseInput("1/2/3")).toBeNull();
+    expect(parseInput("/2")).toBeNull();
+    expect(parseInput("1/")).toBeNull();
+    expect(parseInput("-1/2")).toBeNull();
+    expect(parseInput("1,4,,4")).toBeNull();
+  });
 });
 
 describe("convert.convertTable", () => {

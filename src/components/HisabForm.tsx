@@ -9,13 +9,15 @@ import { div, frac, mul, parseDecimal, toDecimalString, toRatioString } from "..
 import { toBanglaDigits } from "../lib/digits";
 import { shareArea, shareFraction, type AnaParts } from "../lib/share";
 import { decomposeShare, formatChain } from "../lib/decomposition";
-import { buildDeedResult } from "../lib/deed";
+import { buildDeedResult, formatLand } from "../lib/deed";
 import { convert, type AbsoluteUnitId } from "../lib/units";
 import { insertHistory } from "../lib/storage";
 import { hapticSuccess, hapticTick } from "../lib/haptics";
 import { InputCard } from "./InputCard";
 import { GlyphKeypad } from "./GlyphKeypad";
 import { Stepper } from "./Stepper";
+import { BnText } from "./BnText";
+import { ModePicker, type HisabMethod } from "./ModePicker";
 import ResultCard from "./ResultCard";
 import { useRates } from "./RatesProvider";
 
@@ -91,6 +93,9 @@ export function HisabForm({ prefill }: Props) {
   const [totalUnit, setTotalUnit] = useState<AbsoluteUnitId>(() => prefillState?.unit ?? "shoto");
   const [percent, setPercent] = useState(() => prefillState?.percent ?? "");
   const [percentOpen, setPercentOpen] = useState(() => Boolean(prefillState?.percent));
+  const [method, setMethod] = useState<HisabMethod>(() =>
+    prefillState?.percent ? "percent" : "glyph",
+  );
   const [chain, setChain] = useState<Record<ChainKey, string>>(() => {
     const base: Record<ChainKey, string> = { ana: "", gonda: "", kora: "", kranti: "", til: "" };
     for (const key of CHAIN_KEYS) {
@@ -104,9 +109,15 @@ export function HisabForm({ prefill }: Props) {
     const s = percent.trim();
     return s === "" ? null : parseDecimal(s);
   }, [percent]);
-  const percentMode = percent.trim() !== "";
+  // Percent input only drives the share while the percent surface is chosen.
+  const percentMode = method === "percent" && percent.trim() !== "";
   const percentActive = percentMode && percentFrac !== null && percentFrac.num > 0n;
   const percentInvalid = percentMode && (percentFrac === null || percentFrac.num <= 0n);
+
+  // Switching to percent must reveal its collapsible input, never a bare pill.
+  useEffect(() => {
+    if (method === "percent") setPercentOpen(true);
+  }, [method]);
 
   const chainErrors = useMemo(
     () => (percentActive ? {} : validateChain(chain)),
@@ -186,6 +197,7 @@ export function HisabForm({ prefill }: Props) {
       share,
       parts: effParts,
       chainText,
+      totalText: totalShoto ? formatLand(totalShoto, 2, locale) : "—",
       ratioText,
       percentText,
       deed,
@@ -236,6 +248,12 @@ export function HisabForm({ prefill }: Props) {
   };
 
   const localeNumPlaceholder = locale === "bn" ? "০.০০" : "0.00";
+  // t() has no interpolation, so fill the template placeholders by hand.
+  const sentenceHeader = result
+    ? t("hisab_sentence_header")
+        .replace("{value}", result.totalText)
+        .replace("{unit}", t("unit_shoto"))
+    : null;
 
   return (
     <ScrollView
@@ -247,7 +265,14 @@ export function HisabForm({ prefill }: Props) {
       }}
       keyboardShouldPersistTaps="handled"
     >
-      {/* 0 — Compact live answer bar (kept visible while tapping glyphs) */}
+      {/* 0 — Sentence header: which share of which total, at a glance */}
+      {sentenceHeader ? (
+        <BnText variant="title" style={{ color: colors.primary }}>
+          {sentenceHeader}
+        </BnText>
+      ) : null}
+
+      {/* 1 — Compact live answer bar (kept visible while tapping glyphs) */}
       {result ? (
         <View
           style={{
@@ -287,108 +312,117 @@ export function HisabForm({ prefill }: Props) {
         </View>
       ) : null}
 
-      {/* 1 — Deed glyph strip, above the fields. Tap to set ana; typing ana highlights it. */}
-      <GlyphKeypad
-        onAna={(n) => setChain((prev) => ({ ...prev, ana: String(n) }))}
-        onKora={(n) => setChain((prev) => ({ ...prev, kora: String(n) }))}
-        onKranti={(n) => setChain((prev) => ({ ...prev, kranti: String(n) }))}
-        selectedAna={selectedAna}
-        selectedKora={selectedKora}
-        selectedKranti={selectedKranti}
-        disabled={percentActive}
-      />
+      {/* 2 — Method picker: glyph strip, ana chain fields, or percent shortcut */}
+      <ModePicker value={method} onChange={setMethod} />
 
-      {/* 2 — Ana chain fields (live-linked to the glyph strip) */}
-      <View
-        pointerEvents={percentActive ? "none" : "auto"}
-        accessibilityElementsHidden={percentActive}
-        importantForAccessibility={percentActive ? "no-hide-descendants" : "auto"}
-        style={{ gap: spacing[2], opacity: percentActive ? 0.4 : 1 }}
-      >
-        {CHAIN_KEYS.map((key) => (
-          <Stepper
-            key={key}
-            label={t(key)}
-            value={chain[key]}
-            onChange={setPart(key)}
-            error={chainError(key)}
-          />
-        ))}
-      </View>
+      {/* 3 — Deed glyph strip; tap to set ana, typing ana highlights it */}
+      {method === "glyph" ? (
+        <GlyphKeypad
+          onAna={(n) => setChain((prev) => ({ ...prev, ana: String(n) }))}
+          onKora={(n) => setChain((prev) => ({ ...prev, kora: String(n) }))}
+          onKranti={(n) => setChain((prev) => ({ ...prev, kranti: String(n) }))}
+          selectedAna={selectedAna}
+          selectedKora={selectedKora}
+          selectedKranti={selectedKranti}
+          disabled={percentActive}
+        />
+      ) : null}
 
-      {/* 3 — Percent shortcut: collapsible; drives the chain when open */}
-      {!percentOpen ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t("percent_label")}
-          onPress={() => setPercentOpen(true)}
-          style={({ pressed }) => [
-            {
-              minHeight: 44,
-              borderRadius: radius.full,
-              borderWidth: 1,
-              borderColor: colors.outlineVariant,
-              backgroundColor: colors.surfaceVariant,
-              alignItems: "center",
-              justifyContent: "center",
-              paddingHorizontal: spacing[3],
-            },
-            pressed && { backgroundColor: colors.surface },
-          ]}
+      {/* 4 — Ana chain fields (live-linked to the glyph strip) */}
+      {method === "chain" ? (
+        <View
+          pointerEvents={percentActive ? "none" : "auto"}
+          accessibilityElementsHidden={percentActive}
+          importantForAccessibility={percentActive ? "no-hide-descendants" : "auto"}
+          style={{ gap: spacing[2], opacity: percentActive ? 0.4 : 1 }}
         >
-          <Text
-            style={{
-              color: colors.onSurfaceVariant,
-              fontFamily: typography.fonts.bengali,
-              fontSize: typography.sizes[1],
-              fontWeight: "600",
-            }}
-          >
-            {t("percent_label")} · {t("percent_note")}
-          </Text>
-        </Pressable>
-      ) : (
-        <>
-          <InputCard
-            label={t("percent_label")}
-            value={percent}
-            onChangeText={setPercent}
-            error={percentInvalid ? t("err_positive") : null}
-            keyboardType="decimal-pad"
-            placeholder={locale === "bn" ? "৫০" : "50"}
-            accessibilityHint={t("percent_label")}
-          />
-          {percentActive ? (
-            <Text
-              accessibilityLiveRegion="polite"
-              style={{
-                color: colors.warn,
-                fontFamily: typography.fonts.bengali,
-                fontSize: typography.sizes[0],
-                textAlign: "center",
-              }}
-            >
-              {t("percent_note")}
-            </Text>
-          ) : null}
+          {CHAIN_KEYS.map((key) => (
+            <Stepper
+              key={key}
+              label={t(key)}
+              value={chain[key]}
+              onChange={setPart(key)}
+              error={chainError(key)}
+            />
+          ))}
+        </View>
+      ) : null}
+
+      {/* 5 — Percent shortcut: collapsible; drives the chain when open */}
+      {method === "percent" ? (
+        !percentOpen ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t("history_clear")}
-            onPress={() => {
-              setPercent("");
-              setPercentOpen(false);
-            }}
+            accessibilityLabel={t("percent_label")}
+            onPress={() => setPercentOpen(true)}
             style={({ pressed }) => [
-              { alignSelf: "flex-end", padding: spacing[1] },
-              pressed && { opacity: 0.6 },
+              {
+                minHeight: 44,
+                borderRadius: radius.full,
+                borderWidth: 1,
+                borderColor: colors.outlineVariant,
+                backgroundColor: colors.surfaceVariant,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingHorizontal: spacing[3],
+              },
+              pressed && { backgroundColor: colors.surface },
             ]}
           >
-            <Text style={{ color: colors.onSurfaceVariant, fontSize: 13 }}>×</Text>
+            <Text
+              style={{
+                color: colors.onSurfaceVariant,
+                fontFamily: typography.fonts.bengali,
+                fontSize: typography.sizes[1],
+                fontWeight: "600",
+              }}
+            >
+              {t("percent_label")} · {t("percent_note")}
+            </Text>
           </Pressable>
-        </>
-      )}
+        ) : (
+          <>
+            <InputCard
+              label={t("percent_label")}
+              value={percent}
+              onChangeText={setPercent}
+              error={percentInvalid ? t("err_positive") : null}
+              keyboardType="decimal-pad"
+              placeholder={locale === "bn" ? "৫০" : "50"}
+              accessibilityHint={t("percent_label")}
+            />
+            {percentActive ? (
+              <Text
+                accessibilityLiveRegion="polite"
+                style={{
+                  color: colors.warn,
+                  fontFamily: typography.fonts.bengali,
+                  fontSize: typography.sizes[0],
+                  textAlign: "center",
+                }}
+              >
+                {t("percent_note")}
+              </Text>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("history_clear")}
+              onPress={() => {
+                setPercent("");
+                setPercentOpen(false);
+              }}
+              style={({ pressed }) => [
+                { alignSelf: "flex-end", padding: spacing[1] },
+                pressed && { opacity: 0.6 },
+              ]}
+            >
+              <Text style={{ color: colors.onSurfaceVariant, fontSize: 13 }}>×</Text>
+            </Pressable>
+          </>
+        )
+      ) : null}
 
-      {/* 4 — Optional total land, any unit; converted to shoto exactly */}
+      {/* 6 — Optional total land, any unit; converted to shoto exactly */}
       <InputCard
         label={t("total_optional")}
         value={totalRaw}
@@ -438,7 +472,7 @@ export function HisabForm({ prefill }: Props) {
         })}
       </View>
 
-      {/* 5 — Live answer card (no button) */}
+      {/* 7 — Live answer card (no button) */}
       {result ? (
         <>
           {savedNote ? (

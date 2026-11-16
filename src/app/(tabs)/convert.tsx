@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -10,32 +11,20 @@ import {
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import * as Clipboard from "expo-clipboard";
-import { ArrowLeftRight, Check, X } from "lucide-react-native";
+import { ArrowLeftRight, Check, ChevronDown, ChevronUp, Copy, X } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
 import { absoluteUnitIds, unitFactor, type AbsoluteUnitId } from "../../lib/units";
+import unitsData from "../../data/units.json";
 import { isDefaultRates } from "../../lib/rates";
 import { useRates } from "../../components/RatesProvider";
 import { InputCard } from "../../components/InputCard";
+import { UnitPicker, TRADITIONAL_UNITS, METRIC_UNITS } from "../../components/UnitPicker";
+import { ConversionHero } from "../../components/ConversionHero";
 import { parseInput, convertTable } from "../../lib/convert";
 import { hapticSuccess, hapticTick } from "../../lib/haptics";
 
 type ConvertRow = { readonly unit: AbsoluteUnitId; readonly value: string };
-
-const TRADITIONAL_UNITS: readonly AbsoluteUnitId[] = [
-  "shoto",
-  "katha",
-  "chotak",
-  "bigha",
-  "acre",
-  "kani",
-  "gonda",
-  "kora",
-  "kranti",
-  "til",
-  "shatak",
-];
-const METRIC_UNITS: readonly AbsoluteUnitId[] = ["sqft", "sqm", "sqyard", "hectare"];
 
 export default function ConvertScreen() {
   const { colors } = useThemeColors();
@@ -50,7 +39,9 @@ export default function ConvertScreen() {
       ? (f as (typeof absoluteUnitIds)[number])
       : "shoto";
   });
+  const [to, setTo] = useState<AbsoluteUnitId>("sqft");
   const [copiedUnit, setCopiedUnit] = useState<AbsoluteUnitId | null>(null);
+  const [allOpen, setAllOpen] = useState(true);
 
   const value = useMemo(() => parseInput(raw), [raw]);
   const inputError = raw.trim() !== "" && value === null ? t("err_positive") : null;
@@ -88,10 +79,22 @@ export default function ConvertScreen() {
     }
   };
 
+  const onSwap = () => {
+    setFrom(to);
+    setTo(from);
+    hapticTick();
+  };
+
   const groups = [
     { title: "প্রচলিত", units: TRADITIONAL_UNITS },
-    { title: "মেট্রিক/অন্যান্য", units: METRIC_UNITS },
+    { title: t("convert_advanced"), units: METRIC_UNITS },
   ];
+
+  const source = unitsData.source as {
+    readonly name: string;
+    readonly asOf: string;
+    readonly url: string;
+  };
 
   return (
     <KeyboardAvoidingView
@@ -140,65 +143,71 @@ export default function ConvertScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.chipRow}>
-          {absoluteUnitIds.map((u) => {
-            const selected = u === from;
-            return (
-              <Pressable
-                key={u}
-                accessibilityRole="button"
-                accessibilityLabel={t(`unit_${u}`)}
-                accessibilityState={{ selected }}
-                onPress={() => {
-                  setFrom(u);
-                  hapticTick();
-                }}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor: selected ? colors.primaryContainer : "transparent",
-                    borderColor: selected ? colors.primary : colors.outlineVariant,
-                  },
-                ]}
-              >
-                <Text
-                  style={{
-                    color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
-                    fontFamily: typography.fonts.bengali,
-                    fontSize: typography.sizes[1],
-                    fontWeight: selected ? "600" : "400",
-                  }}
-                >
-                  {t(`unit_${u}`)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {rows && rows.length > 0 ? (
-          <Pressable
-            accessibilityLabel={t("convert_swap")}
-            accessibilityRole="button"
-            onPress={() => {
-              const next = rows.find((r) => r.unit !== from);
-              if (!next) return;
-              setRaw(next.value);
-              setFrom(next.unit);
+        {/* From / To pickers with swap */}
+        <View style={styles.pickerRow}>
+          <UnitPicker
+            value={from}
+            exclude={to}
+            titleKey="convert_from"
+            onSelect={(u) => {
+              setFrom(u);
               hapticTick();
             }}
-            style={({ pressed }) => [styles.swapButton, pressed && { opacity: 0.7 }]}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("convert_swap")}
+            onPress={onSwap}
+            style={({ pressed }) => [
+              styles.swapButton,
+              { backgroundColor: colors.surfaceVariant },
+              pressed && { backgroundColor: colors.outlineVariant },
+            ]}
           >
-            <ArrowLeftRight color={colors.primary} size={18} />
-            <Text style={[styles.swapLabel, { color: colors.primary }]}>{"ফলাফল→ইনপুট"}</Text>
+            <ArrowLeftRight color={colors.primary} size={20} />
           </Pressable>
-        ) : null}
+          <UnitPicker
+            value={to}
+            exclude={from}
+            titleKey="convert_to"
+            onSelect={(u) => {
+              setTo(u);
+              hapticTick();
+            }}
+          />
+        </View>
 
         {custom ? (
           <Text style={[styles.badge, { color: colors.onSurfaceVariant }]}>{t("rates_badge")}</Text>
         ) : null}
 
-        {rows ? (
+        <ConversionHero from={from} to={to} value={value} rates={rates} locale={locale} />
+
+        {/* Collapsible reference table */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("convert_all_units")}
+          onPress={() => {
+            setAllOpen((open) => !open);
+            hapticTick();
+          }}
+          style={({ pressed }) => [
+            styles.collapseButton,
+            { borderColor: colors.outlineVariant },
+            pressed && { backgroundColor: colors.surfaceVariant },
+          ]}
+        >
+          <Text style={[styles.collapseLabel, { color: colors.onSurface }]}>
+            {t("convert_all_units")}
+          </Text>
+          {allOpen ? (
+            <ChevronUp color={colors.onSurfaceVariant} size={18} />
+          ) : (
+            <ChevronDown color={colors.onSurfaceVariant} size={18} />
+          )}
+        </Pressable>
+
+        {allOpen && rows ? (
           <View style={[styles.table, { borderColor: colors.outlineVariant }]}>
             {(() => {
               let firstRow = true;
@@ -232,13 +241,17 @@ export default function ConvertScreen() {
                 );
                 for (const r of groupRows) {
                   const copied = copiedUnit === r.unit;
-                  const active = r.unit === from;
+                  const activeFrom = r.unit === from;
+                  const activeTo = r.unit === to;
                   elements.push(
                     <Pressable
                       key={r.unit}
                       accessibilityRole="button"
-                      accessibilityLabel={`${t("copy")}: ${t(`unit_${r.unit}`)} ${r.value}`}
-                      onPress={() => void onCopyRow(r.unit, r.value)}
+                      accessibilityLabel={`${t("convert_to")}: ${t(`unit_${r.unit}`)} ${r.value}`}
+                      onPress={() => {
+                        setTo(r.unit);
+                        hapticTick();
+                      }}
                       style={({ pressed }) => [
                         styles.row,
                         !firstRow && {
@@ -246,25 +259,48 @@ export default function ConvertScreen() {
                           borderTopColor: colors.outlineVariant,
                         },
                         pressed && { backgroundColor: colors.surfaceVariant },
-                        active && { backgroundColor: colors.primaryContainer },
+                        activeFrom && { backgroundColor: colors.primaryContainer },
                       ]}
                     >
-                      <Text style={[styles.unitLabel, { color: colors.onSurfaceVariant }]}>
+                      <Text
+                        style={[
+                          styles.unitLabel,
+                          {
+                            color: activeFrom ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                          },
+                        ]}
+                      >
                         {t(`unit_${r.unit}`)}
                       </Text>
                       <View style={styles.rowValue}>
-                        {copied ? <Check color={colors.success} size={16} /> : null}
+                        {activeTo ? (
+                          <Text style={{ color: colors.primary, fontSize: 12 }}>{"→"}</Text>
+                        ) : null}
                         <Text
                           style={[
                             styles.value,
-                            { color: active ? colors.primary : colors.onSurface },
+                            { color: activeFrom ? colors.primary : colors.onSurface },
+                            activeTo && { fontWeight: "700" },
                           ]}
                         >
                           {r.value}
                         </Text>
-                        {active ? (
-                          <Text style={{ color: colors.primary, fontSize: 12 }}>{"←"}</Text>
-                        ) : null}
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`${t("copy")}: ${t(`unit_${r.unit}`)}`}
+                          hitSlop={8}
+                          onPress={() => void onCopyRow(r.unit, r.value)}
+                          style={({ pressed }) => [
+                            styles.copyButton,
+                            pressed && { backgroundColor: colors.surfaceVariant },
+                          ]}
+                        >
+                          {copied ? (
+                            <Check color={colors.success} size={16} />
+                          ) : (
+                            <Copy color={colors.onSurfaceVariant} size={16} />
+                          )}
+                        </Pressable>
                       </View>
                     </Pressable>,
                   );
@@ -274,16 +310,34 @@ export default function ConvertScreen() {
               return elements;
             })()}
           </View>
-        ) : (
+        ) : null}
+
+        {rows === null ? (
           <Text style={[styles.hint, { color: colors.onSurfaceVariant }]}>{t("convert_hint")}</Text>
-        )}
+        ) : null}
+
+        {/* Ministry source attribution */}
+        <View style={styles.footer}>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={`${source.name} ${source.url}`}
+            onPress={() => void Linking.openURL(source.url)}
+            style={({ pressed }) => [pressed && { opacity: 0.7 }]}
+          >
+            <Text style={[styles.footerLink, { color: colors.primary }]}>
+              {source.name} · {source.asOf} ↗
+            </Text>
+          </Pressable>
+          <Text style={[styles.footerNote, { color: colors.onSurfaceVariant }]}>
+            {t("deed_document_governs")}
+          </Text>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontFamily: typography.fonts.bengali, fontSize: 20, fontWeight: "700" },
   subtitle: {
     fontFamily: typography.fonts.bengali,
     fontSize: typography.sizes[1],
@@ -297,17 +351,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconButtonDisabled: { opacity: 0.4 },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing[1] },
-  chip: {
-    minHeight: 48,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1],
-    borderRadius: radius.full,
-    borderWidth: 1,
+  pickerRow: { flexDirection: "row", alignItems: "stretch", gap: spacing[2] },
+  swapButton: {
     alignItems: "center",
+    alignSelf: "center",
+    borderRadius: radius.full,
+    height: 48,
     justifyContent: "center",
+    width: 48,
   },
   badge: { fontSize: 12, textAlign: "center" },
+  collapseButton: {
+    alignItems: "center",
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing[1],
+    justifyContent: "space-between",
+    minHeight: 48,
+    paddingHorizontal: spacing[3],
+  },
+  collapseLabel: {
+    fontFamily: typography.fonts.bengali,
+    fontSize: typography.sizes[1],
+    fontWeight: "600",
+  },
   table: { borderWidth: 1, borderRadius: radius.md, overflow: "hidden" },
   row: {
     flexDirection: "row",
@@ -318,19 +386,24 @@ const styles = StyleSheet.create({
   unitLabel: { fontSize: 14 },
   rowValue: { flexDirection: "row", alignItems: "center", gap: spacing[1] },
   value: { fontSize: 16, fontWeight: "600" },
-  hint: { fontSize: 14, textAlign: "center" },
-  swapButton: {
-    flexDirection: "row",
+  copyButton: {
     alignItems: "center",
+    borderRadius: radius.full,
     justifyContent: "center",
-    gap: spacing[1],
-    minHeight: 44,
-    alignSelf: "center",
-    paddingHorizontal: spacing[3],
+    minHeight: 32,
+    minWidth: 32,
   },
-  swapLabel: {
+  hint: { fontSize: 14, textAlign: "center" },
+  footer: { alignItems: "center", gap: spacing[1], paddingTop: spacing[2] },
+  footerLink: {
     fontFamily: typography.fonts.bengali,
-    fontSize: typography.sizes[2],
+    fontSize: typography.sizes[0],
     fontWeight: "600",
+    textDecorationLine: "underline",
+  },
+  footerNote: {
+    fontFamily: typography.fonts.bengali,
+    fontSize: typography.sizes[0],
+    textAlign: "center",
   },
 });

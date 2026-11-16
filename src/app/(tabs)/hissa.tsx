@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
-import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
+import { useThemeColors, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { HisabForm } from "../../components/HisabForm";
 import { ReverseForm } from "../../components/ReverseForm";
 import { BontonForm } from "../../components/BontonForm";
-import { entryToDeed, entryToRow, formatEntryDate } from "../../lib/historyView";
+import { RecentList } from "../../components/RecentList";
 import { SHAPE_ORDER, type ShapeId } from "../../lib/shapes";
 import { listHistory, type HistoryEntry } from "../../lib/storage";
 import { hapticTick } from "../../lib/haptics";
@@ -58,12 +57,12 @@ export default function HishabScreen() {
   const [prefill, setPrefill] = useState<string | undefined>(params.prefill);
   // Bumped on every card tap so the same entry still remounts its form.
   const [openNonce, setOpenNonce] = useState(0);
-  const [last, setLast] = useState<HistoryEntry | null>(null);
+  const [recent, setRecent] = useState<HistoryEntry[]>([]);
 
   // Autosaves land while the tab is unfocused; refresh whenever it regains focus.
   useFocusEffect(
     useCallback(() => {
-      setLast(listHistory()[0] ?? null);
+      setRecent(listHistory().slice(0, 3));
     }, []),
   );
 
@@ -74,24 +73,18 @@ export default function HishabScreen() {
     setMode((prev) => (prev === next ? prev : next));
   }, [params.prefill]);
 
-  const onOpenLast = (): void => {
-    if (!last) return;
+  const onOpenEntry = (entry: HistoryEntry): void => {
     hapticTick();
-    const porimap = readPorimapParams(last.inputJson);
+    const porimap = readPorimapParams(entry.inputJson);
     if (porimap) {
       router.push({ pathname: "/(tabs)/land", params: porimap });
       return;
     }
-    setPrefill(last.inputJson);
-    setMode(detectMode(last.inputJson));
+    setPrefill(entry.inputJson);
+    setMode(detectMode(entry.inputJson));
     setOpenNonce((n) => n + 1);
   };
 
-  const deed = last ? entryToDeed(last, locale) : null;
-  const row = last ? entryToRow(last, locale) : null;
-  const lastDate = last ? formatEntryDate(last.createdAt, locale) : "";
-  const lastTitle = deed?.chainText ?? row?.title ?? "";
-  const lastSubtitle = deed ? `${deed.areaText} ${t("unit_shoto")} · ${lastDate}` : lastDate;
   const formKey = `${prefill ?? "blank"}-${openNonce}`;
 
   return (
@@ -102,61 +95,8 @@ export default function HishabScreen() {
     >
       <View style={{ backgroundColor: colors.background, flex: 1 }}>
         <View style={{ padding: spacing[3], paddingBottom: 0, gap: spacing[2] }}>
-          {last ? (
-            <Pressable
-              accessibilityLabel={`${t("home_last_result")}: ${lastTitle}`}
-              accessibilityRole="button"
-              onPress={onOpenLast}
-              style={({ pressed }) => [
-                {
-                  alignItems: "center",
-                  backgroundColor: colors.surface,
-                  borderColor: colors.outlineVariant,
-                  borderRadius: radius.lg,
-                  borderWidth: 1,
-                  flexDirection: "row",
-                  gap: spacing[2],
-                  minHeight: 64,
-                  paddingHorizontal: spacing[3],
-                  paddingVertical: spacing[2],
-                },
-                pressed && { backgroundColor: colors.surfaceVariant },
-              ]}
-            >
-              <View style={{ flex: 1, gap: spacing[0] }}>
-                <Text
-                  style={{
-                    color: colors.onSurfaceVariant,
-                    fontSize: 11,
-                    fontWeight: "600",
-                    letterSpacing: 0.8,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {t("home_last_result")}
-                </Text>
-                <Text
-                  style={{
-                    color: colors.primary,
-                    fontFamily: typography.fonts.bengali,
-                    fontSize: typography.sizes[3],
-                    fontWeight: "700",
-                  }}
-                >
-                  {lastTitle}
-                </Text>
-                <Text
-                  style={{
-                    color: colors.onSurfaceVariant,
-                    fontFamily: typography.fonts.bengali,
-                    fontSize: 13,
-                  }}
-                >
-                  {lastSubtitle}
-                </Text>
-              </View>
-              <ChevronRight color={colors.onSurfaceVariant} size={20} />
-            </Pressable>
+          {recent.length > 0 ? (
+            <RecentList entries={recent} onOpen={onOpenEntry} locale={locale} />
           ) : (
             <Text
               style={{

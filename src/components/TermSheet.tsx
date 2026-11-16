@@ -1,10 +1,9 @@
 import { Modal, Pressable, ScrollView } from "react-native";
 import glossary from "../data/glossary.json";
 import { useThemeColors, radius, spacing } from "../constants/theme";
-import { useLocale } from "../lib/i18n";
+import { t, useLocale } from "../lib/i18n";
+import { categoryLabelKey, type Term } from "../lib/terms";
 import { BnText } from "./BnText";
-
-type Term = (typeof glossary.terms)[number];
 
 export type TermSheetProps = { termId: string | null; onClose: () => void };
 
@@ -14,6 +13,7 @@ export function TermSheet({ termId, onClose }: TermSheetProps) {
   const term = termId
     ? (glossary.terms.find((t) => t.id === termId) as Term | undefined)
     : undefined;
+  const categoryLabel = term ? t(categoryLabelKey(term.category)) : "";
   const closeLabel = locale === "bn" ? "বন্ধ করুন" : "Close";
   return (
     <Modal
@@ -45,6 +45,14 @@ export function TermSheet({ termId, onClose }: TermSheetProps) {
               <BnText variant="caption" style={{ color: colors.onSurfaceVariant }}>
                 {term.term_en} · {term.code}
               </BnText>
+              <BnText variant="caption" style={{ color: colors.primary }}>
+                {categoryLabel}
+              </BnText>
+              {term.aliases && term.aliases.length > 0 ? (
+                <BnText variant="caption" style={{ color: colors.onSurfaceVariant }}>
+                  {t("glossary_aliases")}: {term.aliases.join(", ")}
+                </BnText>
+              ) : null}
               <BnText variant="body" style={{ color: colors.onSurface }}>
                 {term.def_bn}
               </BnText>

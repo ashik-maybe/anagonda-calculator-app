@@ -2,6 +2,7 @@ import bnDict from "../i18n/bn.json";
 import enDict from "../i18n/en.json";
 import { anaGlyph, koraGlyph, krantiGlyph } from "../data/glyphs";
 import { toBanglaDigits } from "./digits";
+import { formatLand } from "./deed";
 import { frac, mul, div, sub, toRatioString, type Fraction } from "./fraction";
 import {
   convert,
@@ -81,6 +82,44 @@ export function sqftToKathaBighaShoto(sqft: Fraction, rates: Rates = DEFAULT_RAT
   const katha = take(rates.kathaSqft);
   const shoto = take(unitFactor("shoto"));
   return { bigha, katha, shoto, remainderSqft: rem };
+}
+
+export type AreaDecomposition = {
+  /** Greedy bigha count, 2dp, locale digits. */
+  readonly bigha: string;
+  /** Greedy katha count (20 per bigha), 2dp, locale digits. */
+  readonly katha: string;
+  /** Greedy chotak count (16 per katha), 2dp, locale digits. */
+  readonly chotak: string;
+  /** Leftover square feet, 2dp, locale digits. */
+  readonly sqft: string;
+};
+
+/** Greedy sqft -> bigha (20 katha) / katha (16 chotak) / chotak / remainder, rates-aware. */
+export function decomposeArea(
+  areaSqft: Fraction,
+  rates: Rates,
+  locale: "bn" | "en",
+): AreaDecomposition {
+  if (areaSqft.num < 0n) {
+    throw new RangeError("decomposeArea: negative area");
+  }
+  let rem = areaSqft;
+  const take = (factor: Fraction): Fraction => {
+    const n = div(rem, factor);
+    const whole = n.num / n.den; // floor for non-negative
+    rem = sub(rem, mul(frac(whole), factor));
+    return frac(whole);
+  };
+  const bigha = take(rates.bighaSqft);
+  const katha = take(rates.kathaSqft);
+  const chotak = take(unitFactor("chotak", rates));
+  return {
+    bigha: formatLand(bigha, 2, locale),
+    katha: formatLand(katha, 2, locale),
+    chotak: formatLand(chotak, 2, locale),
+    sqft: formatLand(rem, 2, locale),
+  };
 }
 
 export type ChainLabels = {

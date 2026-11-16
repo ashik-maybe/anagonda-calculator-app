@@ -6,7 +6,8 @@
       "term_en": "CS khatian",
       "code": "CS",
       "def_bn": "সিএস (ক্যাডেস্ট্রাল সার্ভে) খতিয়ান — জমির প্রথম আধুনিক জরিপের রেকর্ড; এতে দাগ, খতিয়ান নম্বর ও মালিকানা লিপিবদ্ধ থাকে।",
-      "def_en": "CS khatian — the record from the Cadastral Survey, the earliest modern Bengal land survey; it lists the dag, khatian number and ownership."
+      "def_en": "CS khatian — the record from the Cadastral Survey, the earliest modern Bengal land survey; it lists the dag, khatian number and ownership.",
+      "category": "record"
     },
     {
       "id": "sa_khatian",
@@ -14,7 +15,8 @@
       "term_en": "SA khatian",
       "code": "SA",
       "def_bn": "এসএ (স্টেট অ্যাকুইজিশন) খতিয়ান — জমিদারি প্রথার বিলোপ ও রাষ্ট্রীয় অধিগ্রহণ পর্বের জরিপ রেকর্ড; সিএস রেকর্ডের ধারাবাহিক হালনাগাদ রূপ।",
-      "def_en": "SA khatian — the record from the State Acquisition settlement era after the zamindari system was abolished; a continuation of the CS record."
+      "def_en": "SA khatian — the record from the State Acquisition settlement era after the zamindari system was abolished; a continuation of the CS record.",
+      "category": "record"
     },
     {
       "id": "rs_khatian",
@@ -22,7 +24,8 @@
       "term_en": "RS khatian",
       "code": "RS",
       "def_bn": "আরএস (রিভাইসনাল সার্ভে) খতিয়ান — সিএস/এসএ রেকর্ড সংশোধন ও হালনাগাদ জরিপের রেকর্ড।",
-      "def_en": "RS khatian — the Revisional Survey record, a correction and update of the CS/SA records."
+      "def_en": "RS khatian — the Revisional Survey record, a correction and update of the CS/SA records.",
+      "category": "record"
     },
     {
       "id": "bs_khatian",
@@ -30,7 +33,8 @@
       "term_en": "BS khatian",
       "code": "BS",
       "def_bn": "বিএস (বাংলাদেশ সার্ভে) খতিয়ান — স্বাধীনতার পরের আধুনিক জরিপের সর্বশেষ রেকর্ড; বর্তমানে নামজারি ও রেজিস্ট্রির ভিত্তি।",
-      "def_en": "BS khatian — the Bangladesh Survey record, the latest modern settlement; the basis for current namjari and registration."
+      "def_en": "BS khatian — the Bangladesh Survey record, the latest modern settlement; the basis for current namjari and registration.",
+      "category": "record"
     },
     {
       "id": "dag",
@@ -38,7 +42,8 @@
       "term_en": "Dag",
       "code": "দাগ",
       "def_bn": "দাগ — জরিপ মানচিত্রে প্লটের নম্বর; প্রতিটি দাগ মৌজার নির্দিষ্ট জমির খণ্ডকে চিহ্নিত করে।",
-      "def_en": "Dag — the plot number on a settlement map; each dag identifies a specific parcel of land within a mouja."
+      "def_en": "Dag — the plot number on a settlement map; each dag identifies a specific parcel of land within a mouja.",
+      "category": "record"
     },
     {
       "id": "mouja",
@@ -46,7 +51,8 @@
       "term_en": "Mouja",
       "code": "মৌজা",
       "def_bn": "মৌজা — ভূমি জরিপের ক্ষুদ্রতম ইউনিট; এক বা একাধিক দাগ নিয়ে একটি মৌজা গঠিত, এবং খতিয়ান মৌজা অনুযায়ী প্রস্তুত হয়।",
-      "def_en": "Mouja — the smallest land-survey unit; a mouja is made of one or more dags, and khatian records are prepared per mouja."
+      "def_en": "Mouja — the smallest land-survey unit; a mouja is made of one or more dags, and khatian records are prepared per mouja.",
+      "category": "record"
     },
     {
       "id": "namjari",
@@ -54,7 +60,8 @@
       "term_en": "Namjari",
       "code": "নামজারি",
       "def_bn": "নামজারি — ক্রয়, উত্তরাধিকার বা অন্য কারণে খতিয়ান রেকর্ডে নতুন মালিকের নাম নিবন্ধনের প্রক্রিয়া।",
-      "def_en": "Namjari — the process of registering a new owner's name in the khatian record after purchase, inheritance or other transfer."
+      "def_en": "Namjari — the process of registering a new owner's name in the khatian record after purchase, inheritance or other transfer.",
+      "category": "record"
     },
     {
       "id": "deed",
@@ -62,7 +69,8 @@
       "term_en": "Deed",
       "code": "দলিল",
       "def_bn": "দলিল — জমির মালিকানা সৃষ্টি বা হস্তান্তরের আইনি দলিল; দলিলে যা লেখা আছে তাই চূড়ান্ত মান নির্ণয় করে।",
-      "def_en": "Deed — the legal instrument that creates or transfers land ownership; what the deed says governs the actual value."
+      "def_en": "Deed — the legal instrument that creates or transfers land ownership; what the deed says governs the actual value.",
+      "category": "record"
     },
     {
       "id": "khatian",
@@ -70,7 +78,8 @@
       "term_en": "Khatian",
       "code": "খতিয়ান",
       "def_bn": "খতিয়ান — কোনো মৌজার জমির মালিকানা, দাগ, পরিমাণ ও ভাগ (আনা-গন্ডা) সম্বলিত সরকারি রেকর্ড; খতিয়ানে ভাগের যোগফল ১৬ আনা হয়।",
-      "def_en": "Khatian — the official record of a mouja listing ownership, dag, area and shares in ana-gonda; the shares in a khatian sum to 16 ana."
+      "def_en": "Khatian — the official record of a mouja listing ownership, dag, area and shares in ana-gonda; the shares in a khatian sum to 16 ana.",
+      "category": "record"
     },
     {
       "id": "ana_glyphs",
@@ -78,7 +87,8 @@
       "term_en": "Ana glyphs",
       "code": "⁄–১",
       "def_bn": "আনা চিহ্নের সারণি — ১: ⁄ · ২: ৵ · ৩: ৶ · ৪: ৷ · ৫: ৷⁄ · ৬: ৷৵ · ৭: ৷৶ · ৮: ৷৷ · ৯: ৷৷⁄ · ১০: ৷৷৵ · ১১: ৷৷৶ · ১২: ৸ · ১৩: ৸⁄ · ১৪: ৸৵ · ১৫: ৸৶ · ১৬: সংখ্যা ১৬ (ষোল আনা)। দলিলে আনা সংখ্যায় নয়, এই চিহ্নগুলো দিয়ে লেখা হয়; গন্ডা ও তিলের কোনো চিহ্ন নেই।",
-      "def_en": "Ana glyph table — 1: ⁄ · 2: ৵ · 3: ৶ · 4: ৷ · 5: ৷⁄ · 6: ৷৵ · 7: ৷৶ · 8: ৷৷ · 9: ৷৷⁄ · 10: ৷৷৵ · 11: ৷৷৶ · 12: ৸ · 13: ৸⁄ · 14: ৸৵ · 15: ৸৶ · 16: the numeral 16 (ষোল আনা). Deeds write ana with these glyphs, not digits; gonda and til have no glyphs."
+      "def_en": "Ana glyph table — 1: ⁄ · 2: ৵ · 3: ৶ · 4: ৷ · 5: ৷⁄ · 6: ৷৵ · 7: ৷৶ · 8: ৷৷ · 9: ৷৷⁄ · 10: ৷৷৵ · 11: ৷৷৶ · 12: ৸ · 13: ৸⁄ · 14: ৸৵ · 15: ৸৶ · 16: the numeral 16 (ষোল আনা). Deeds write ana with these glyphs, not digits; gonda and til have no glyphs.",
+      "category": "share"
     },
     {
       "id": "sym_kora",
@@ -86,7 +96,8 @@
       "term_en": "Kora glyphs",
       "code": "৷ ৷৷ ৸",
       "def_bn": "কড়া চিহ্ন — ১ কড়া: ৷ · ২ কড়া: ৷৷ · ৩ কড়া: ৸; ৪ কড়া = ১ গন্ডা।",
-      "def_en": "Kora glyphs — 1 kora: ৷ · 2 kora: ৷৷ · 3 kora: ৸; 4 kora = 1 gonda."
+      "def_en": "Kora glyphs — 1 kora: ৷ · 2 kora: ৷৷ · 3 kora: ৸; 4 kora = 1 gonda.",
+      "category": "share"
     },
     {
       "id": "sym_kranti",
@@ -94,7 +105,8 @@
       "term_en": "Kranti glyphs",
       "code": "৴ ৴৴",
       "def_bn": "ক্রান্তি চিহ্ন — ১ ক্রান্তি: ৴ · ২ ক্রান্তি: ৴৴; ৩ ক্রান্তি = ১ কড়া।",
-      "def_en": "Kranti glyphs — 1 kranti: ৴ · 2 kranti: ৴৴; 3 kranti = 1 kora."
+      "def_en": "Kranti glyphs — 1 kranti: ৴ · 2 kranti: ৴৴; 3 kranti = 1 kora.",
+      "category": "share"
     },
     {
       "id": "gonda_note",
@@ -102,7 +114,8 @@
       "term_en": "Gonda (numeric)",
       "code": "২০ গন্ডা",
       "def_bn": "গন্ডার কোনো চিহ্ন নেই — সংখ্যায় লেখা হয়; ২০ গন্ডা = ১ আনা, ১ গন্ডা = ৮৬৪ বর্গফুট।",
-      "def_en": "Gonda has no glyph — written numerically; 20 gonda = 1 ana; 1 gonda = 864 sq ft."
+      "def_en": "Gonda has no glyph — written numerically; 20 gonda = 1 ana; 1 gonda = 864 sq ft.",
+      "category": "share"
     },
     {
       "id": "til_note",
@@ -110,7 +123,8 @@
       "term_en": "Til (numeric)",
       "code": "৪৮০০ তিল",
       "def_bn": "তিলের কোনো চিহ্ন নেই — সংখ্যায় লেখা হয়; ২০ তিল = ১ ক্রান্তি, ১ আনা = ৪৮০০ তিল; জমির ক্ষুদ্রতম ভাগ।",
-      "def_en": "Til has no glyph — written numerically; 20 til = 1 kranti, 1 ana = 4,800 til; the smallest share unit."
+      "def_en": "Til has no glyph — written numerically; 20 til = 1 kranti, 1 ana = 4,800 til; the smallest share unit.",
+      "category": "share"
     },
     {
       "id": "sixteen_ana",
@@ -118,7 +132,429 @@
       "term_en": "Sixteen ana",
       "code": "১৬ আনা",
       "def_bn": "খতিয়ানের পূর্ণ অংশ ১৬ আনা = ৪৮০০ তিল = ৩২০ গন্ডা = ১৭,২৮০ বর্গফুট (১ কানি); সকল ভাগের যোগফল ১৬ আনা হলে খতিয়ান সম্পূর্ণ।",
-      "def_en": "The whole of a khatian — 16 ana = 4,800 til = 320 gonda = 17,280 sq ft (1 kani); when the shares sum to 16 ana, the khatian is complete."
+      "def_en": "The whole of a khatian — 16 ana = 4,800 til = 320 gonda = 17,280 sq ft (1 kani); when the shares sum to 16 ana, the khatian is complete.",
+      "category": "share"
+    },
+    {
+      "id": "porcha",
+      "term_bn": "পর্চা",
+      "term_en": "Porcha",
+      "code": "পর্চা",
+      "def_bn": "সেটেলমেন্ট অফিস থেকে খতিয়ানের সংক্ষিপ্ত প্রতিলিপি হিসেবে দেওয়া নির্যাস; এতে দাগ নম্বর, জমির পরিমাণ ও মালিকের নাম সংক্ষেপে থাকে।",
+      "def_en": "A short certified extract of the khatian issued by the settlement office, listing dag, area and owner.",
+      "category": "record",
+      "aliases": ["পটচা"]
+    },
+    {
+      "id": "chut_dag",
+      "term_bn": "ছুট দাগ",
+      "term_en": "Chut dag",
+      "code": "ছুট দাগ",
+      "def_bn": "মানচিত্রে দেখানো হয়েছে কিন্তু খতিয়ানে মালিক বা দাখিলার কোনো এন্ট্রি নেই এমন দাগ; জমা সংশোধনের সময় ধরা পড়ে।",
+      "def_en": "A dag shown on the map but missing from the record with no owner entry, usually found during joma revision.",
+      "category": "record"
+    },
+    {
+      "id": "bata_dag",
+      "term_bn": "বাটা দাগ",
+      "term_en": "Bata dag",
+      "code": "বাটা দাগ",
+      "def_bn": "পূর্ববর্তী জরিপের কোনো মূল দাগ থেকে অংশ বাদ দিয়ে আলাদা করে পুনর্নম্বর দেওয়া দাগ; রেকর্ডে প্রায়ই মূল দাগের সঙ্গে জোড়া লাগিয়ে লেখা হয়।",
+      "def_en": "A dag created by separating a portion of an earlier mother dag and renumbering it.",
+      "category": "record"
+    },
+    {
+      "id": "jl_number",
+      "term_bn": "জে.এল. নম্বর",
+      "term_en": "JL number",
+      "code": "JL",
+      "def_bn": "জে.এল. (জুরিসডিকশন লিস্ট) নম্বর — প্রতিটি মৌজাকে জেলা পর্যায়ে দেওয়া অনন্য পরিচায়ক নম্বর; রাজস্ব নথিতে মৌজা চেনার ভিত্তি।",
+      "def_en": "The jurisdiction-list number that uniquely identifies each mouja at the district level.",
+      "category": "record",
+      "aliases": ["জুরিসডিকশন লিস্ট নম্বর"]
+    },
+    {
+      "id": "naksha",
+      "term_bn": "নকশা",
+      "term_en": "Naksha",
+      "code": "নকশা",
+      "def_bn": "মৌজার জরিপ মানচিত্র যেখানে দাগ নম্বর, সীমানা ও সড়ক-নালার অবস্থান আঁকা থাকে; নকশা ও খতিয়ান মিলিয়ে জমি চিহ্নিত করা হয়।",
+      "def_en": "The cadastral map of a mouja showing dag boundaries, used with the khatian to identify plots.",
+      "category": "record"
+    },
+    {
+      "id": "tasdiq",
+      "term_bn": "তসদিক",
+      "term_en": "Tasdiq",
+      "code": "তসদিক",
+      "def_bn": "রেকর্ড বা মাঠ পর্যায়ের তথ্য যাচাই করে সঠিক বলে নিশ্চিত করার সরকারি অনুমোদন; তসদিক ছাড়া অনেক রেকর্ড চূড়ান্ত হয় না।",
+      "def_en": "Official verification confirming that a record or field entry is correct.",
+      "category": "record"
+    },
+    {
+      "id": "dakhila",
+      "term_bn": "দাখিলা",
+      "term_en": "Dakhila",
+      "code": "দাখিলা",
+      "def_bn": "খাজনা বা সরকারি পাওনা আদায় হলে দেওয়া অফিসিয়াল রসিদ; জমির কাজের প্রমাণ হিসেবে এটি প্রায়শই চাওয়া হয়।",
+      "def_en": "The official receipt issued on payment of land revenue or other government dues.",
+      "category": "record"
+    },
+    {
+      "id": "dcr",
+      "term_bn": "ডি.সি.আর.",
+      "term_en": "DCR",
+      "code": "DCR",
+      "def_bn": "ডিস্ট্রিক্ট কালেকশন রসিদ — জেলা প্রশাসনের অধীনে ভূমি রাজস্বসহ সরকারি পাওনা আদায় হলে দেওয়া রসিদ।",
+      "def_en": "The district collection receipt issued against land revenue and other government dues.",
+      "category": "record",
+      "aliases": ["ডিসিআর", "ডিস্ট্রিক্ট কালেকশন রসিদ"]
+    },
+    {
+      "id": "kharij",
+      "term_bn": "খারিজ",
+      "term_en": "Kharij",
+      "code": "খারিজ",
+      "def_bn": "খতিয়ানে পুরাতন জমা বা মালিকানার এন্ট্রি বাতিল বা কাটা করার সরকারি আদেশ; নতুন নামজারির আগে প্রায়ই খারিজ হয়।",
+      "def_en": "The official cancellation of an old joma or ownership entry in the khatian, usually before a fresh mutation.",
+      "category": "record"
+    },
+    {
+      "id": "jomabondi",
+      "term_bn": "জমাবন্দি",
+      "term_en": "Jomabandi",
+      "code": "জমাবন্দি",
+      "def_bn": "কোনো মৌজার রায়ত ও তাদের জমা (খাজনা ধার্য) একসঙ্গে সংবলিত সরকারি খাতা; খাজনা আদায় ও ছিটা তৈরির ভিত্তি।",
+      "def_en": "The revenue register listing raiyats and their assessed jama, the basis of rent collection and chitha preparation.",
+      "category": "record"
+    },
+    {
+      "id": "gunter_chain",
+      "term_bn": "গান্টার চেইন",
+      "term_en": "Gunter's chain",
+      "code": "গান্টার চেইন",
+      "def_bn": "জরিপে ব্যবহৃত ৬৬ ফুট লম্বা চেইনপাই (১০০ লিংক); এই চেইনদৈর্ঘ্য দিয়ে বর্গক্ষেত্র মাপা থেকেই একর ও কানির ধারণা এসেছে।",
+      "def_en": "The 66-foot surveyor's chain of 100 links used in settlement surveys to derive area units such as acre and kani.",
+      "category": "record"
+    },
+    {
+      "id": "danga_jomi",
+      "term_bn": "ডাঙ্গা জমি",
+      "term_en": "Danga land",
+      "code": "ডাঙ্গা জমি",
+      "def_bn": "উঁচু ও শুকনো সমতল ভূমি যা বন্যায় সাধারণত ডুবে না; ধানের চেয়ে অন্য ফসল ও বসবাসের উপযোগী।",
+      "def_en": "High, flat land that normally stays above flood level, suited to crops and habitation other than paddy.",
+      "category": "landclass",
+      "aliases": ["ডাঙা জমি"]
+    },
+    {
+      "id": "nal_jomi",
+      "term_bn": "নাল জমি",
+      "term_en": "Nal land",
+      "code": "নাল জমি",
+      "def_bn": "জলাশয়ের ধারে নিচু জমি যা বর্ষায় ডুবে থাকে; সাধারণত গভীর ভাগের ধান ও মাছ চাষে ব্যবহার হয়।",
+      "def_en": "Low-lying land beside water bodies that stays submerged in the monsoon, used for deepwater paddy and fisheries.",
+      "category": "landclass"
+    },
+    {
+      "id": "viti",
+      "term_bn": "ভিটি",
+      "term_en": "Viti",
+      "code": "ভিটি",
+      "def_bn": "বসতবাড়ির প্লট — বাড়ি, আঙিনা ও সংলগ্ন উঠান নিয়ে গঠিত জমি; ভিটি ছাড়া বাকি অংশ সাধারণত চাষের জমি।",
+      "def_en": "The homestead plot comprising the house and courtyard; the rest of the holding is usually cultivable land.",
+      "category": "landclass",
+      "aliases": ["কুটি"]
+    },
+    {
+      "id": "baor",
+      "term_bn": "বাওড়",
+      "term_en": "Baor",
+      "code": "বাওড়",
+      "def_bn": "নদী শুকিয়ে গেলে বা নদীপথ বদলালে বাঁকা বাঁকা মরা চ্যানেল যেখানে পানি জমে থাকে; উত্তরবঙ্গের বিস্তীর্ণ বাওড় পরিচিত।",
+      "def_en": "An oxbow depression formed where a river course died or shifted, holding permanent water.",
+      "category": "landclass"
+    },
+    {
+      "id": "haor",
+      "term_bn": "হাওড়",
+      "term_en": "Haor",
+      "code": "হাওড়",
+      "def_bn": "সিলেট অঞ্চলের বিশাল নিম্নভূমি যা বর্ষায় ডুবে এক বিস্তীর্ণ জলাশয়ে পরিণত হয়; শীতকালের ধান-ফসল বিখ্যাত।",
+      "def_en": "The vast seasonal wetland basins of the north-east that flood into open water in the monsoon.",
+      "category": "landclass"
+    },
+    {
+      "id": "bil",
+      "term_bn": "বিল",
+      "term_en": "Bil",
+      "code": "বিল",
+      "def_bn": "চিরস্থায়ী বা মৌসুমি নিচু জলাভূমি; মাছ চাষ ও বগুড়া-পাবনা বিল এলাকার ধান উৎপাদনের প্রধান কেন্দ্র।",
+      "def_en": "A low-lying wetland, permanent or seasonal, central to fisheries and paddy in the Chalan Beel region.",
+      "category": "landclass"
+    },
+    {
+      "id": "jhil",
+      "term_bn": "ঝিল",
+      "term_en": "Jhil",
+      "code": "ঝিল",
+      "def_bn": "স্থায়ী অগভীর হ্রদ বা বৃহৎ জলাশয়; গ্রামের পূজা, মাছ ধরা ও সেচের জন্য ঝিলের গুরুত্ব অপরিসীম।",
+      "def_en": "A shallow lake or large pond used for fisheries, worship and irrigation.",
+      "category": "landclass"
+    },
+    {
+      "id": "ail",
+      "term_bn": "আইল",
+      "term_en": "Ail",
+      "code": "আইল",
+      "def_bn": "পার্শ্ববর্তী দাগগুলোর মাঝে বাঁধার জন্য খাড়া বেড়া বা উঁচু মাটির সীমানা রেখা।",
+      "def_en": "The raised earth ridge marking the boundary between adjoining plots.",
+      "category": "landclass"
+    },
+    {
+      "id": "sikosti",
+      "term_bn": "সিকস্তি",
+      "term_en": "Sikosti",
+      "code": "সিকস্তি",
+      "def_bn": "নদীভাঙনে বা স্থায়ী জলাবদ্ধতায় হারিয়ে যাওয়া জমি; সিকস্তি জমি খাজনা মাফ পেয়ে থাকে।",
+      "def_en": "Land permanently lost to river erosion or waterlogging; it is usually exempted from revenue.",
+      "category": "landclass",
+      "aliases": ["ভাঙন জমি", "বিলীন জমি"]
+    },
+    {
+      "id": "poisti",
+      "term_bn": "পয়স্তি",
+      "term_en": "Poisti",
+      "code": "পয়স্তি",
+      "def_bn": "নদী বা চরে পলি জমে নতুন করে জেগে ওঠা জমি; পয়স্তি জমি আইনত চর ইজারা আকারে পাওয়া যায়।",
+      "def_en": "Land newly formed by accretion of silt in river beds or chars, allotted under char regulations.",
+      "category": "landclass",
+      "aliases": ["পলি জমি", "চর জমি"]
+    },
+    {
+      "id": "gochar",
+      "term_bn": "গোপাট",
+      "term_en": "Gopat",
+      "code": "গোপাট",
+      "def_bn": "পোষ্য গবাদিপশুর চারণভূমি হিসেবে সংরক্ষিত জমি; গ্রামের সকলের গোচর অধিকার থাকতে পারে।",
+      "def_en": "Land reserved as common grazing ground for the village's livestock.",
+      "category": "landclass",
+      "aliases": ["গোচর", "গোবাম", "চারণভূমি"]
+    },
+    {
+      "id": "borga_chashi",
+      "term_bn": "বর্গা চাষী",
+      "term_en": "Sharecropper",
+      "code": "বর্গা চাষী",
+      "def_bn": "অন্যের জমিতে ফসল ভাগের ভিত্তিতে চাষ করা চাষী; বর্গা সম্পর্ক বাঙালি ভূমি আইনের বিশেষ নিয়মে নিয়ন্ত্রিত।",
+      "def_en": "A tenant who cultivates another's land in exchange for a share of the crop, governed by sharecropping law.",
+      "category": "share"
+    },
+    {
+      "id": "harahari",
+      "term_bn": "হারাহারি",
+      "term_en": "Harahari",
+      "code": "হারাহারি",
+      "def_bn": "সহাকারী মালিকানার ভিত্তিতে সমানভাবে ভাগ করার নীতি; দলিলে হারাহারি থাকলে সকলেই সমান অংশীদার।",
+      "def_en": "Division equally among co-sharers; a deed written harahari gives every party an equal share.",
+      "category": "share"
+    },
+    {
+      "id": "bitang",
+      "term_bn": "বিতং",
+      "term_en": "Bitang",
+      "code": "বিতং",
+      "def_bn": "পুরো জমিকে দুই ভাগে বিভক্ত করার উল্লেখ; দলিলে বিতং থাকলে দুটি অংশে ভাগের হিসাব বোঝায়।",
+      "def_en": "A division of the whole into two parts; used in deeds to denote a two-fold split.",
+      "category": "share",
+      "aliases": ["বীতং"]
+    },
+    {
+      "id": "rayat",
+      "term_bn": "রায়ত",
+      "term_en": "Raiyat",
+      "code": "রায়ত",
+      "def_bn": "জমি ইজারা বা পট্টায় ভোগ করা ও রাজস্ব প্রদানকারী ব্যক্তি; রায়ত ও জমিদারের মাঝে ইজারদারি সম্পর্ক থাকে।",
+      "def_en": "The cultivating tenant who holds land on rent and pays revenue.",
+      "category": "tax",
+      "aliases": ["রাইয়ত", "রাইয়াত"]
+    },
+    {
+      "id": "mahal",
+      "term_bn": "মহাল",
+      "term_en": "Mahal",
+      "code": "মহাল",
+      "def_bn": "রাজস্ব আদায়ের একটি প্রশাসনিক একক; এক মহালে একটি বা একাধিক গ্রাম থাকতে পারে।",
+      "def_en": "An administrative unit for revenue collection, covering one or more villages.",
+      "category": "tax"
+    },
+    {
+      "id": "kharaj",
+      "term_bn": "খারাজ",
+      "term_en": "Kharaj",
+      "code": "খারাজ",
+      "def_bn": "কৃষি জমির উপর বসানো রাজস্ব; খারাজের পরিমাণ জমির শ্রেণী ও ফলন অনুযায়ী নির্ধারিত হয়।",
+      "def_en": "The land revenue assessed on agricultural land, graded by class and productivity.",
+      "category": "tax"
+    },
+    {
+      "id": "hasil",
+      "term_bn": "হাসিল",
+      "term_en": "Hasil",
+      "code": "হাসিল",
+      "def_bn": "জমি থেকে প্রাপ্ত ফসল বা রাজস্বের আদায়কৃত অংশ; হাসিলের হিসাব দিয়েই বছরের রাজস্ব মজুত হয়।",
+      "def_en": "The realised portion of crops or revenue collected from land.",
+      "category": "tax"
+    },
+    {
+      "id": "tolobbaki",
+      "term_bn": "তলববাকী",
+      "term_en": "Tolobbaki",
+      "code": "তলববাকী",
+      "def_bn": "ধার্য রাজস্বের মধ্যে আদায় না হওয়া বাকি অংশ; তলববাকী জমে থাকলে জমিতে তাগাদা দেওয়া হয়।",
+      "def_en": "The uncollected balance of assessed revenue demand; arrears trigger demand notices.",
+      "category": "tax",
+      "aliases": ["তলব বাকী"]
+    },
+    {
+      "id": "nazrana",
+      "term_bn": "নজরানা",
+      "term_en": "Nazrana",
+      "code": "নজরানা",
+      "def_bn": "পত্তন, হস্তান্তর বা অধিকার পুনঃপ্রতিষ্ঠার সময় দেওয়া প্রথাগত উপঢৌকন-সদৃশ অর্থ; এখনও অনেক শ্রেণীর জমির ক্ষেত্রে নজরানা চাওয়া হয়।",
+      "def_en": "A customary nazar payment made when land is granted, transferred or an entitlement is reconfirmed.",
+      "category": "tax"
+    },
+    {
+      "id": "washilat",
+      "term_bn": "ওয়াশিলাত",
+      "term_en": "Washilat",
+      "code": "ওয়াশিলাত",
+      "def_bn": "রাজস্ব নথিতে আয়ের উৎস বা মাধ্যম; কোনো জমি থেকে কী কী উপায়ে আয় হয় তা ওয়াশিলাতে লেখা থাকে।",
+      "def_en": "The source or means of income recorded for a holding's revenue in the settlement records.",
+      "category": "tax"
+    },
+    {
+      "id": "jolkor",
+      "term_bn": "জলকর",
+      "term_en": "Jolkor",
+      "code": "জলকর",
+      "def_bn": "নদী-নালা, পুকুর ও জলাশয় থেকে আদায় করা মাছ ও জলজ পণ্যের রাজস্ব।",
+      "def_en": "The revenue levied on fisheries and water bodies.",
+      "category": "tax"
+    },
+    {
+      "id": "jolmohal",
+      "term_bn": "জলমহাল",
+      "term_en": "Jolmohal",
+      "code": "জলমহাল",
+      "def_bn": "জলজ সম্পত্তি আদায়ের জন্য নির্ধারিত রাজস্ব মহাল; ইজারা দিয়ে মাছ ধরা ও জল ব্যবহার থেকে আয় হয়।",
+      "def_en": "A revenue mahal devoted to income from water bodies, farmed out for fisheries and water rights.",
+      "category": "tax"
+    },
+    {
+      "id": "lakherej",
+      "term_bn": "লাখেরেজ",
+      "term_en": "Lakherej",
+      "code": "লাখেরেজ",
+      "def_bn": "রাজস্ব মাফ বা চিরস্থায়ী রাজস্ব-মুক্ত জমি; লাখেরেজ জমির মালিক রাজস্ব দেন না কিন্তু অন্য কর দিতে পারেন।",
+      "def_en": "Land permanently exempted from revenue, held as revenue-free tenure.",
+      "category": "tax",
+      "aliases": ["লাখিরাজ", "লাখেরাজ"]
+    },
+    {
+      "id": "boynama",
+      "term_bn": "বয়নামা",
+      "term_en": "Boynama",
+      "code": "বয়নামা",
+      "def_bn": "আদালত বা নিলামের মাধ্যমে বিক্রি হওয়া জমির ক্রেতাকে দেওয়া বিক্রয় সার্টিফিকেট বা নিলাম সনদ।",
+      "def_en": "The sale certificate issued by the court to the auction purchaser of attached land.",
+      "category": "transfer",
+      "aliases": ["বয়ননামা", "বিক্রয় সার্টিফিকেট"]
+    },
+    {
+      "id": "dokholnama",
+      "term_bn": "দখলনামা",
+      "term_en": "Dokholnama",
+      "code": "দখলনামা",
+      "def_bn": "জমির দখল নেওয়া হয়েছে বলে সম্মতির লিখিত বিবরণ; নিলাম বা বণ্টনের পর দখলনামা দেওয়া হয়।",
+      "def_en": "The written acknowledgement of possession executed when land is delivered after sale or partition.",
+      "category": "transfer"
+    },
+    {
+      "id": "odhigrohon",
+      "term_bn": "ভূমি অধিগ্রহণ",
+      "term_en": "Land acquisition",
+      "code": "ভূমি অধিগ্রহণ",
+      "def_bn": "জনস্বার্থে রাষ্ট্রের জমি অধিগ্রহণ; ক্ষতিপূরণ দিয়ে মালিকানা অধিগ্রহণ করা হয়।",
+      "def_en": "Compulsory acquisition of land by the state for public purpose, against compensation.",
+      "category": "transfer"
+    },
+    {
+      "id": "binimoyo_sompotti",
+      "term_bn": "বিনিময় সম্পত্তি",
+      "term_en": "Exchange property",
+      "code": "বিনিময় সম্পত্তি",
+      "def_bn": "অন্য জমির বিনিময়ে পাওয়া সম্পত্তি; বিনিময়ের দলিল দিয়ে মালিকানা পরিবর্তন হয়।",
+      "def_en": "Property acquired by exchange in place of other land, transferred by an exchange deed.",
+      "category": "transfer"
+    },
+    {
+      "id": "wakf",
+      "term_bn": "ওয়াকফ",
+      "term_en": "Wakf",
+      "code": "ওয়াকফ",
+      "def_bn": "ধর্মীয় বা দাতব্য উদ্দেশ্যে সম্পত্তি স্থায়ীভাবে উৎসর্গ; উৎসর্গীকৃত সম্পত্তি হস্তান্তর বা বিক্রি করা যায় না।",
+      "def_en": "The dedication of property in perpetuity for religious or charitable purposes; it cannot be transferred or sold.",
+      "category": "transfer"
+    },
+    {
+      "id": "heba",
+      "term_bn": "হেবা",
+      "term_en": "Heba",
+      "code": "হেবা",
+      "def_bn": "মুসলিম আইন অনুযায়ী কাউকে সম্পদ উপহার দেওয়া; হেবা দলিল দান হিসেবে রেজিস্ট্রিতে হয়।",
+      "def_en": "A gift of property under Muslim law, executed by a heba deed.",
+      "category": "transfer",
+      "aliases": ["হিবা"]
+    },
+    {
+      "id": "debottor_sompotti",
+      "term_bn": "দেবোত্তর সম্পত্তি",
+      "term_en": "Debottar property",
+      "code": "দেবোত্তর সম্পত্তি",
+      "def_bn": "দেবতার নামে উৎসর্গকৃত সম্পত্তি; এর আয় দেবতার পূজা ও সেবায় ব্যয় হয়, বাকিটা সেবায়েত ভোগ করেন।",
+      "def_en": "Property dedicated to a deity; its income is spent on the deity's worship and services by the sebayet.",
+      "category": "transfer"
+    },
+    {
+      "id": "iza",
+      "term_bn": "ইজা",
+      "term_en": "Iza",
+      "code": "ইজা",
+      "def_bn": "নির্ধারিত সময় ও ভাড়ার বিনিময়ে জমি ব্যবহারের অধিকার; ইজা শেষে জমি মূল মালিকের কাছে ফেরৎ আসে।",
+      "def_en": "The right to use land for a fixed term against rent; on expiry possession reverts to the owner.",
+      "category": "transfer",
+      "aliases": ["ইজারা"]
+    },
+    {
+      "id": "pattana",
+      "term_bn": "পত্তন",
+      "term_en": "Pattana",
+      "code": "পত্তন",
+      "def_bn": "অধিকার বা ইজারা দেওয়ার প্রক্রিয়া; পত্তনপত্র দিয়ে জমিদার ইজারাদারকে জমি ব্যবহারের অধিকার দেন।",
+      "def_en": "The granting of settlement or lease of land, creating the landlord-tenant relationship through a pattan deed.",
+      "category": "transfer"
+    },
+    {
+      "id": "qabuliyat",
+      "term_bn": "কবুলিয়ত",
+      "term_en": "Qabuliyat",
+      "code": "কবুলিয়ত",
+      "def_bn": "ইজারা বা পত্তনের শর্ত মেনে নেওয়ার লিখিত সম্মতি; ইজারাদার কবুলিয়তে স্বাক্ষর করে ইজারা গ্রহণ করেন।",
+      "def_en": "The written acceptance of lease terms signed by the lessee when taking a pattan.",
+      "category": "transfer",
+      "aliases": ["কাবুলিয়ত"]
     }
   ]
 }

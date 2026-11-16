@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { eq, frac, div, ZERO } from "./fraction";
-import { unitFactor } from "./units";
+import { eq, frac, div, mul, ZERO } from "./fraction";
+import { unitFactor, DEFAULT_RATES } from "./units";
 import {
+  decomposeArea,
   decomposeShare,
   formatChain,
   formatShareChain,
@@ -127,6 +128,66 @@ describe("sqftToKathaBighaShoto", () => {
 
   test("rejects negative input", () => {
     expect(() => sqftToKathaBighaShoto(frac(-1))).toThrow(RangeError);
+  });
+});
+
+describe("decomposeArea", () => {
+  test("1 acre -> 3 bigha 8 chotak (43560 = 3*14400 + 8*45)", () => {
+    const d = decomposeArea(frac(43560), DEFAULT_RATES, "en");
+    expect(d).toEqual({ bigha: "3.00", katha: "0.00", chotak: "8.00", sqft: "0.00" });
+  });
+
+  test("1 bigha -> 20 katha -> 320 chotak (factor chain)", () => {
+    expect(decomposeArea(frac(14400), DEFAULT_RATES, "en")).toEqual({
+      bigha: "1.00",
+      katha: "0.00",
+      chotak: "0.00",
+      sqft: "0.00",
+    });
+    expect(eq(unitFactor("bigha"), mul(unitFactor("katha"), frac(20)))).toBe(true);
+    expect(eq(unitFactor("katha"), mul(unitFactor("chotak"), frac(16)))).toBe(true);
+    expect(eq(unitFactor("bigha"), mul(unitFactor("chotak"), frac(320)))).toBe(true);
+  });
+
+  test("mixed breakdown with sqft remainder", () => {
+    // 15000 - 14400 = 600 -> 0 katha, 13 chotak (13*45=585), 15 sqft left
+    const d = decomposeArea(frac(15000), DEFAULT_RATES, "en");
+    expect(d).toEqual({ bigha: "1.00", katha: "0.00", chotak: "13.00", sqft: "15.00" });
+  });
+
+  test("katha-only area decomposes without bigha", () => {
+    expect(decomposeArea(frac(720), DEFAULT_RATES, "en")).toEqual({
+      bigha: "0.00",
+      katha: "1.00",
+      chotak: "0.00",
+      sqft: "0.00",
+    });
+    expect(decomposeArea(frac(45), DEFAULT_RATES, "en")).toEqual({
+      bigha: "0.00",
+      katha: "0.00",
+      chotak: "1.00",
+      sqft: "0.00",
+    });
+  });
+
+  test("bn locale uses bangla digits", () => {
+    expect(decomposeArea(frac(43560), DEFAULT_RATES, "bn")).toEqual({
+      bigha: "৩.০০",
+      katha: "০.০০",
+      chotak: "৮.০০",
+      sqft: "০.০০",
+    });
+  });
+
+  test("custom rates respected", () => {
+    const rates = { bighaSqft: frac(14400), kathaSqft: frac(800) };
+    // 1000 sqft -> 1 katha (800), rem 200 -> chotak = 800/16 = 50 sqft, 4 chotak = 200
+    const d = decomposeArea(frac(1000), rates, "en");
+    expect(d).toEqual({ bigha: "0.00", katha: "1.00", chotak: "4.00", sqft: "0.00" });
+  });
+
+  test("rejects negative area", () => {
+    expect(() => decomposeArea(frac(-1), DEFAULT_RATES, "en")).toThrow(RangeError);
   });
 });
 
