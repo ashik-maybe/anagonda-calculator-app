@@ -3,6 +3,7 @@ import enDict from "../i18n/en.json";
 import { formatChain, type ChainDecomposition, type ChainLabels } from "./decomposition";
 import { groupDigits, toBanglaDigits } from "./digits";
 import { div, mul, toDecimalString, toRatioString, type Fraction } from "./fraction";
+import { anaGlyph, koraGlyph, krantiGlyph } from "../data/glyphs";
 import { unitFactor, DEFAULT_RATES, type Rates, type AbsoluteUnitId } from "./units";
 
 // Deterministic per call: no global locale state, so tests are stable.
@@ -41,6 +42,8 @@ export type DeedResult = {
   readonly strip: readonly ConversionStripItem[];
   /** Full deed sentence for copy/share (text-only share). */
   readonly sentence: string;
+  /** Document-style glyph form of the chain (ana glyph + numeric gonda + ...). */
+  readonly glyphText: string;
 };
 
 export type DeedInput = {
@@ -85,5 +88,26 @@ export function buildDeedResult(input: DeedInput, locale: "bn" | "en" = "bn"): D
     .replace("{chain}", chainText)
     .replace("{area}", areaText)
     .replace("{ratio}", ratioText);
-  return { totalText, chainText, ratioText, areaText, strip, sentence };
+  // Document-style glyph form of the chain (ana glyph + numeric gonda + ...).
+  const glyphParts: string[] = [];
+  const ag = anaGlyph(input.chain.ana);
+  if (ag) glyphParts.push(ag);
+  else if (input.chain.ana === 0)
+    glyphParts.push(`${digitsFor(locale, "0")} ${localize(locale, "ana")}`);
+  if (input.chain.gonda > 0)
+    glyphParts.push(`${digitsFor(locale, String(input.chain.gonda))} ${localize(locale, "gonda")}`);
+  const kg = koraGlyph(input.chain.kora);
+  if (kg) glyphParts.push(kg);
+  else if (input.chain.kora > 0)
+    glyphParts.push(`${digitsFor(locale, String(input.chain.kora))} ${localize(locale, "kora")}`);
+  const krg = krantiGlyph(input.chain.kranti);
+  if (krg) glyphParts.push(krg);
+  else if (input.chain.kranti > 0)
+    glyphParts.push(
+      `${digitsFor(locale, String(input.chain.kranti))} ${localize(locale, "kranti")}`,
+    );
+  if (input.chain.til > 0)
+    glyphParts.push(`${digitsFor(locale, String(input.chain.til))} ${localize(locale, "til")}`);
+  const glyphText = glyphParts.join(" ");
+  return { totalText, chainText, ratioText, areaText, strip, sentence, glyphText };
 }

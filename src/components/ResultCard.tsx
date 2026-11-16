@@ -37,7 +37,7 @@ export default function ResultCard({ deed }: Props) {
   return (
     <View
       accessibilityRole="summary"
-      accessibilityLabel={`${t("result")}: ${deed.chainText}, ${deed.areaText} ${t("unit_shoto")}`}
+      accessibilityLabel={`${t("result")}: ${deed.chainText}, ${deed.glyphText}, ${deed.areaText} ${t("unit_shoto")}`}
       style={{
         backgroundColor: colors.surface,
         borderColor: colors.outlineVariant,
@@ -71,6 +71,17 @@ export default function ResultCard({ deed }: Props) {
           }}
         >
           {deed.chainText}
+        </Text>
+        <Text
+          style={{
+            color: colors.onSurfaceVariant,
+            fontSize: 13,
+            textAlign: "center",
+            fontFamily: typography.fonts.bengali,
+            letterSpacing: 2,
+          }}
+        >
+          {t("deed_glyphs")}: {deed.glyphText}
         </Text>
       </View>
 

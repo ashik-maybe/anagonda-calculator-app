@@ -18,6 +18,7 @@ import { buildDeedResult } from "../lib/deed";
 import { insertHistory } from "../lib/storage";
 import { hapticSuccess } from "../lib/haptics";
 import { InputCard } from "./InputCard";
+import { GlyphKeypad } from "./GlyphKeypad";
 import { Stepper } from "./Stepper";
 import ResultCard from "./ResultCard";
 import { useRates } from "./RatesProvider";
@@ -165,6 +166,12 @@ export function HisabForm({ prefill }: Props) {
           />
         ))}
       </View>
+
+      <GlyphKeypad
+        onAna={(n) => setChain((prev) => ({ ...prev, ana: String(n) }))}
+        onKora={(n) => setChain((prev) => ({ ...prev, kora: String(n) }))}
+        onKranti={(n) => setChain((prev) => ({ ...prev, kranti: String(n) }))}
+      />
 
       {result ? (
         <>
