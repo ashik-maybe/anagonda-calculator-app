@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { ANA_GLYPHS, KORA_GLYPHS, KRANTI_GLYPHS } from "../data/glyphs";
 import { radius, spacing, typography, useThemeColors } from "../constants/theme";
 import { t } from "../lib/i18n";
@@ -35,27 +35,25 @@ export function GlyphKeypad({
       <Text style={styles.hint}>{t("glyph_keypad_hint")}</Text>
 
       <Text style={styles.rowLabel}>{t("ana")}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.row}>
-          {ANA_GLYPHS.map((g) => {
-            const selected = selectedAna === g.ana;
-            return (
-              <Pressable
-                key={g.ana}
-                accessibilityRole="button"
-                accessibilityLabel={`${g.glyph} ${g.ana} ${t("ana")}`}
-                accessibilityState={{ disabled, selected }}
-                disabled={disabled}
-                onPress={() => onAna(g.ana)}
-                style={[styles.chip, selected && styles.chipSelected, disabled && styles.dimmed]}
-              >
-                <Text style={[styles.glyph, selected && styles.glyphSelected]}>{g.glyph}</Text>
-                <Text style={[styles.value, selected && styles.valueSelected]}>{g.ana}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </ScrollView>
+      <View style={styles.row}>
+        {ANA_GLYPHS.map((g) => {
+          const selected = selectedAna === g.ana;
+          return (
+            <Pressable
+              key={g.ana}
+              accessibilityRole="button"
+              accessibilityLabel={`${g.glyph} ${g.ana} ${t("ana")}`}
+              accessibilityState={{ disabled, selected }}
+              disabled={disabled}
+              onPress={() => onAna(g.ana)}
+              style={[styles.chip, selected && styles.chipSelected, disabled && styles.dimmed]}
+            >
+              <Text style={[styles.glyph, selected && styles.glyphSelected]}>{g.glyph}</Text>
+              <Text style={[styles.value, selected && styles.valueSelected]}>{g.ana}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <Text style={styles.rowLabel}>{t("kora")}</Text>
       <View style={styles.row}>
