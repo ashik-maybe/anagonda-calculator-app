@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleAlert, Ruler, Trash2 } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
@@ -165,15 +165,35 @@ function AreaCard({
   );
 }
 
+const VALID_SHAPES = new Set<ShapeId>(SHAPE_ORDER);
+
 export default function LandScreen() {
   const { colors } = useThemeColors();
   const locale = useLocale();
   const router = useRouter();
+  const params = useLocalSearchParams<{ shape?: string; inputs?: string }>();
   const [shape, setShape] = useState<ShapeId>("quad");
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [plots, setPlots] = useState<Plot[]>([]);
   const [savedNote, setSavedNote] = useState(false);
   const nextPlotId = useRef(0);
+
+  useEffect(() => {
+    if (typeof params.shape !== "string" || typeof params.inputs !== "string") return;
+    if (!VALID_SHAPES.has(params.shape as ShapeId)) return;
+    try {
+      const parsed = JSON.parse(params.inputs) as unknown;
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return;
+      const nextInputs: Record<string, string> = {};
+      for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+        if (typeof value === "string") nextInputs[key] = value;
+      }
+      setShape(params.shape as ShapeId);
+      setInputs(nextInputs);
+    } catch {
+      // ignore invalid params
+    }
+  }, [params.shape, params.inputs]);
 
   const fields = shapeFields(shape);
 

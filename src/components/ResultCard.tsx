@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Share, Text, View, Pressable } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { Check, Copy, Share2 } from "lucide-react-native";
@@ -16,11 +16,16 @@ export default function ResultCard({ deed }: Props) {
   const { colors } = useThemeColors();
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
   const onCopy = async () => {
     hapticSuccess();
     await Clipboard.setStringAsync(deed.sentence);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const onShare = async () => {

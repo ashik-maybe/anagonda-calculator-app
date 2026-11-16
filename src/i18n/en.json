@@ -146,5 +146,6 @@
   "about_on_device": "Everything stays on your device",
   "share_app": "Share app",
   "haptics": "Haptic feedback",
-  "home_tip": "Good to know"
+  "home_tip": "Good to know",
+  "retry": "Retry"
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import { useThemeColors, radius, spacing, typography } from "../../constants/theme";
 import { t, useLocale } from "../../lib/i18n";
@@ -9,6 +9,7 @@ import { HisabForm } from "../../components/HisabForm";
 import { ReverseForm } from "../../components/ReverseForm";
 import { BontonForm } from "../../components/BontonForm";
 import { entryToDeed, entryToRow, formatEntryDate } from "../../lib/historyView";
+import { SHAPE_ORDER, type ShapeId } from "../../lib/shapes";
 import { listHistory, type HistoryEntry } from "../../lib/storage";
 import { hapticTick } from "../../lib/haptics";
 
@@ -27,9 +28,31 @@ function detectMode(prefill?: string): HishabMode {
   }
 }
 
+/** Porimap rows reopen the measure tab with their shape and dimensions restored. */
+function readPorimapParams(inputJson: string): { shape: string; inputs: string } | null {
+  try {
+    const parsed = JSON.parse(inputJson) as { mode?: unknown; shape?: unknown; inputs?: unknown };
+    if (
+      parsed.mode !== "porimap" ||
+      typeof parsed.shape !== "string" ||
+      !SHAPE_ORDER.includes(parsed.shape as ShapeId)
+    ) {
+      return null;
+    }
+    const inputs =
+      parsed.inputs !== null && typeof parsed.inputs === "object" && !Array.isArray(parsed.inputs)
+        ? JSON.stringify(parsed.inputs)
+        : "{}";
+    return { shape: parsed.shape, inputs };
+  } catch {
+    return null;
+  }
+}
+
 export default function HishabScreen() {
   const { colors } = useThemeColors();
   const locale = useLocale();
+  const router = useRouter();
   const params = useLocalSearchParams<{ prefill?: string }>();
   const [mode, setMode] = useState<HishabMode>(() => detectMode(params.prefill));
   const [prefill, setPrefill] = useState<string | undefined>(params.prefill);
@@ -40,7 +63,7 @@ export default function HishabScreen() {
   // Autosaves land while the tab is unfocused; refresh whenever it regains focus.
   useFocusEffect(
     useCallback(() => {
-      setLast(listHistory("hishab")[0] ?? null);
+      setLast(listHistory()[0] ?? null);
     }, []),
   );
 
@@ -54,6 +77,11 @@ export default function HishabScreen() {
   const onOpenLast = (): void => {
     if (!last) return;
     hapticTick();
+    const porimap = readPorimapParams(last.inputJson);
+    if (porimap) {
+      router.push({ pathname: "/(tabs)/land", params: porimap });
+      return;
+    }
     setPrefill(last.inputJson);
     setMode(detectMode(last.inputJson));
     setOpenNonce((n) => n + 1);

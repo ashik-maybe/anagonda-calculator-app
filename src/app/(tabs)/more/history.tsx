@@ -127,12 +127,34 @@ export default function HistoryScreen() {
                 meta={formatEntryDate(item.createdAt, locale)}
                 deleteLabel={t("history_delete")}
                 locale={locale}
-                onPress={() =>
+                onPress={() => {
+                  if (item.mode === "porimap") {
+                    try {
+                      const parsed = JSON.parse(item.inputJson) as {
+                        shape?: unknown;
+                        inputs?: unknown;
+                      };
+                      const shape = typeof parsed.shape === "string" ? parsed.shape : undefined;
+                      const inputs =
+                        parsed.inputs && typeof parsed.inputs === "object"
+                          ? (parsed.inputs as Record<string, unknown>)
+                          : undefined;
+                      if (shape && inputs) {
+                        router.push({
+                          pathname: "/(tabs)/land",
+                          params: { shape, inputs: JSON.stringify(inputs) },
+                        });
+                        return;
+                      }
+                    } catch {
+                      // fall through to hissa prefill
+                    }
+                  }
                   router.push({
                     pathname: "/(tabs)/hissa",
                     params: { prefill: item.inputJson },
-                  })
-                }
+                  });
+                }}
                 onDelete={() => onDelete(item.id)}
               />
             );

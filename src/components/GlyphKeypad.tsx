@@ -48,7 +48,7 @@ export function GlyphKeypad({
             <Pressable
               key={g.ana}
               accessibilityRole="button"
-              accessibilityLabel={`${g.glyph} ${g.ana} ${t("ana")}`}
+              accessibilityLabel={`${t("ana")} ${g.ana}`}
               accessibilityState={{ disabled, selected }}
               disabled={disabled}
               onPress={() => onAna(g.ana)}
@@ -69,7 +69,7 @@ export function GlyphKeypad({
             <Pressable
               key={g.kora}
               accessibilityRole="button"
-              accessibilityLabel={`${g.glyph} ${g.kora} ${t("kora")}`}
+              accessibilityLabel={`${t("kora")} ${g.kora}`}
               accessibilityState={{ disabled, selected }}
               disabled={disabled}
               onPress={() => onKora(g.kora)}
@@ -90,7 +90,7 @@ export function GlyphKeypad({
             <Pressable
               key={g.kranti}
               accessibilityRole="button"
-              accessibilityLabel={`${g.glyph} ${g.kranti} ${t("kranti")}`}
+              accessibilityLabel={`${t("kranti")} ${g.kranti}`}
               accessibilityState={{ disabled, selected }}
               disabled={disabled}
               onPress={() => onKranti(g.kranti)}

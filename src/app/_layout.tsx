@@ -1,14 +1,42 @@
 import { useEffect, useState } from "react";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, type ErrorBoundaryProps } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { I18nProvider } from "../lib/i18n";
+import { I18nProvider, t } from "../lib/i18n";
 import { loadSettings } from "../lib/settings";
 import { useAppFonts } from "../lib/fonts";
 import { useThemeColors } from "../constants/theme";
 import { RatesProvider } from "../components/RatesProvider";
+import { TonalButton } from "../components/TonalButton";
 
 SplashScreen.preventAutoHideAsync();
+
+/** Route-level fallback shown when a render error escapes the tree. */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  const { colors } = useThemeColors();
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 16,
+        padding: 24,
+        backgroundColor: colors.background,
+      }}
+    >
+      <Text style={{ color: colors.error, fontSize: 20, fontWeight: "700", textAlign: "center" }}>
+        {t("err_generic")}
+      </Text>
+      <Text style={{ color: colors.onSurfaceVariant, fontSize: 14, textAlign: "center" }}>
+        {error.message}
+      </Text>
+      <TonalButton label={t("retry")} onPress={() => void retry()} />
+    </View>
+  );
+}
 
 export default function RootLayout() {
   const loaded = useAppFonts();
