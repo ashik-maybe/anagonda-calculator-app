@@ -23,14 +23,18 @@ export function SegmentedControl({
   const styles = makeStyles(colors);
 
   return (
-    <View accessibilityLabel={accessibilityLabel} style={styles.container}>
+    <View
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="radiogroup"
+      style={styles.container}
+    >
       {segments.map((segment) => {
         const selected = segment.key === value;
         return (
           <Pressable
-            accessibilityRole="segment"
+            accessibilityRole="radio"
             accessibilityLabel={segment.label}
-            accessibilityState={{ selected }}
+            accessibilityState={{ checked: selected, selected }}
             key={segment.key}
             onPress={() => onChange(segment.key)}
             style={({ pressed }) => [
