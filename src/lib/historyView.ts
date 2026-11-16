@@ -116,7 +116,7 @@ const hishabRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView => 
     const glyph = chainGlyphText(decomposeShare(share), locale);
     return {
       title: deed.chainText,
-      subtitle: `${deed.areaText} ${localize(locale, "unit_shoto")} · ${deed.ratioText} · ${localize(locale, "deed_glyphs")}: ${glyph}`,
+      subtitle: `${deed.areaText} ${localize(locale, "unit_shoto")} · ${deed.ratioText}`,
       glyphText: glyph,
     };
   } catch {
@@ -189,7 +189,7 @@ const reverseRow = (entry: HistoryEntry, locale: "bn" | "en"): HistoryRowView =>
       subtitle: `${digitsFor(locale, toRatioString(share))} · ${digitsFor(
         locale,
         toDecimalString(area, 2),
-      )} ${localize(locale, "unit_shoto")} · ${localize(locale, "deed_glyphs")}: ${glyph}`,
+      )} ${localize(locale, "unit_shoto")}`,
       glyphText: glyph,
     };
   } catch {

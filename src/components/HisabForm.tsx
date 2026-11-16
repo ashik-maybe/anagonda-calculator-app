@@ -104,8 +104,8 @@ export function HisabForm({ prefill }: Props) {
     return s === "" ? null : parseDecimal(s);
   }, [percent]);
   const percentMode = percent.trim() !== "";
-  const percentActive = percentMode && percentFrac !== null;
-  const percentInvalid = percentMode && percentFrac === null;
+  const percentActive = percentMode && percentFrac !== null && percentFrac.num > 0n;
+  const percentInvalid = percentMode && (percentFrac === null || percentFrac.num <= 0n);
 
   const chainErrors = useMemo(
     () => (percentActive ? {} : validateChain(chain)),
@@ -162,7 +162,11 @@ export function HisabForm({ prefill }: Props) {
     const chainText = formatChain(decomp, labels, locale);
     const ratioText = digitsFor(toRatioString(share));
     const percentText = digitsFor(toDecimalString(mul(share, frac(100)), 2));
-    const area = totalShoto ? shareArea(totalShoto, effParts) : null;
+    const area = totalShoto
+      ? percentActive && percentFrac
+        ? mul(totalShoto, share)
+        : shareArea(totalShoto, effParts)
+      : null;
     const deed =
       totalShoto && area
         ? buildDeedResult({ totalShoto, share, shareArea: area, chain: decomp, rates }, locale)

@@ -3,6 +3,8 @@
   "tab_land": "Measure",
   "tab_convert": "Convert",
   "tab_more": "More",
+  "worksheet_add": "Add to list",
+  "result": "Result",
   "convert_title": "Unit conversion",
   "convert_input": "Value",
   "convert_hint": "Enter a value and pick a unit",
