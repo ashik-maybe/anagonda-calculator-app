@@ -51,6 +51,11 @@ both digit sets; inline errors only (no alerts); 48dp touch targets; every `Pres
 carries an accessibility role/label; token contrast ≥ 4.5:1 in both schemes (gated by
 `scripts/contrast-check.mjs`).
 
+## Privacy
+
+Privacy policy (bilingual, hosted on GitHub Pages): https://ashik-maybe.github.io/anagonda-app-privacy/
+Source: https://github.com/ashik-maybe/anagonda-app-privacy
+
 ## License
 
 App code: MIT. Fonts: SIL Open Font License 1.1 (full text embedded in-app under
