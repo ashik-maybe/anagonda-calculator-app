@@ -13,13 +13,15 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { radius, spacing, typography, useThemeColors } from "../constants/theme";
 import { t, useLocale } from "../lib/i18n";
+import { saveLocale } from "../lib/settings";
+import { hapticTick } from "../lib/haptics";
 import { TonalButton } from "../components/TonalButton";
 
 const ONBOARDING_KEY = "onboarding:done";
 
 export default function OnboardingScreen() {
   const { colors } = useThemeColors();
-  useLocale();
+  const locale = useLocale();
   const { width } = useWindowDimensions();
   const pagerRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const [checked, setChecked] = useState(false);
@@ -145,6 +147,20 @@ export default function OnboardingScreen() {
           </View>
         ))}
       </ScrollView>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={locale === "bn" ? "English" : "বাংলা"}
+        onPress={() => {
+          const next = locale === "bn" ? "en" : "bn";
+          void saveLocale(next);
+          hapticTick();
+        }}
+        style={[styles.langToggle, { top: spacing[2], right: spacing[2] }]}
+      >
+        <Text style={[styles.langLabel, { color: colors.onSurfaceVariant }]}>
+          {locale === "bn" ? "English" : "বাংলা"}
+        </Text>
+      </Pressable>
       <View style={styles.dotsRow}>
         {slides.map((_, index) => (
           <Pressable
@@ -258,6 +274,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[2],
   },
   skipLabel: {
+    fontFamily: typography.fonts.bengali,
+    fontSize: typography.sizes[1],
+    fontWeight: "500",
+  },
+  langToggle: {
+    justifyContent: "center",
+    minHeight: 32,
+    paddingHorizontal: spacing[3],
+    position: "absolute",
+  },
+  langLabel: {
     fontFamily: typography.fonts.bengali,
     fontSize: typography.sizes[1],
     fontWeight: "500",

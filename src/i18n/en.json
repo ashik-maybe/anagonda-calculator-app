@@ -213,5 +213,9 @@
   "more_section_app": "App",
   "clear_input": "Clear input",
   "percent_clear": "Close percent",
-  "glossary_card_label": "Term definition"
+  "glossary_card_label": "Term definition",
+  "copied": "Copied",
+  "history_deleted": "Removed from history",
+  "plot_removed": "Plot removed",
+  "rates_source_note": "Based on the government survey directorate's standard; change if your area uses a different rate"
 }

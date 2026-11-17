@@ -121,6 +121,10 @@ export default function RatesScreen() {
         </Text>
       ) : null}
 
+      <Text style={[styles.sourceNote, { color: colors.onSurfaceVariant }]}>
+        {t("rates_source_note")}
+      </Text>
+
       <View style={styles.disclaimerRow}>
         <CircleAlert color={colors.onSurfaceVariant} size={14} />
         <Text style={[styles.disclaimer, { color: colors.onSurfaceVariant }]}>
@@ -173,5 +177,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: typography.fonts.bengali,
     fontSize: 12,
+  },
+  sourceNote: {
+    fontFamily: typography.fonts.bengali,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: spacing[2],
   },
 });

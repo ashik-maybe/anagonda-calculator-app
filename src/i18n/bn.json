@@ -213,5 +213,9 @@
   "more_section_app": "অ্যাপ",
   "clear_input": "ইনপুট মুছুন",
   "percent_clear": "শতকরা বন্ধ করুন",
-  "glossary_card_label": "শব্দের বিবরণ"
+  "glossary_card_label": "শব্দের বিবরণ",
+  "copied": "কপি হয়েছে",
+  "history_deleted": "ইতিহাস থেকে মুছে গেছে",
+  "plot_removed": "প্লট মুছে গেছে",
+  "rates_source_note": "সরকারি জরিপ অধিদপ্তরের মানদণ্ড; এলাকায় প্রচলিত হার ভিন্ন হলে নিজের মতো বদলে নিন"
 }
