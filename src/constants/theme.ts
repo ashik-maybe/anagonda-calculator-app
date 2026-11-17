@@ -38,7 +38,7 @@ export type ThemeColors = {
   inversePrimary: string;
 };
 export const colorsLight: ThemeColors = {
-  primary: "#1E6B3C",
+  primary: "#006A4E",
   onPrimary: "#FFFFFF",
   primaryContainer: "#BFE8CC",
   onPrimaryContainer: "#00381B",
@@ -103,7 +103,7 @@ export const colorsDark: ThemeColors = {
   scrim: "#000000",
   inverseSurface: "#DEEFE1",
   inverseOnSurface: "#0E1611",
-  inversePrimary: "#1E6B3C",
+  inversePrimary: "#006A4E",
 };
 export const spacing = [4, 8, 12, 16, 24, 32] as const;
 export const radius = { sm: 8, md: 16, lg: 24, full: 9999 } as const;

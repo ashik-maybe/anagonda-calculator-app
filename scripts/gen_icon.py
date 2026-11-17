@@ -1,205 +1,180 @@
-import struct, zlib, os
+#!/usr/bin/env python3
+"""Generate the Ana Gonda Calculator icon set.
 
-W, H = 1024, 1024
+Bangladesh-flag palette: bottle green #006A4E (field) + red #F42A41 (the share),
+cream #FBF3E0 (the ana mark). The diagonal seam is the ana slash (16-ana division)
+and the conversion arrow at once; the Bengali currency mark U+09F8 (15/16) sits
+at the pivot.
+"""
+import os, struct, zlib
+from fontTools.ttLib import TTFont
+from fontTools.pens.basePen import BasePen
 
-def write_png(path, pixels):
-    # pixels: list of (r,g,b,a) length W*H
+GREEN = (0, 106, 78)
+RED = (244, 42, 65)
+CREAM = (251, 243, 224)
+FONT = "assets/fonts/NotoSansBengali[wght].ttf"
+PIVOT_CP = 0x09F8
+
+
+def write_png(path, w, h, pixels):
     def chunk(typ, data):
         c = typ + data
         return struct.pack(">I", len(data)) + c + struct.pack(">I", zlib.crc32(c) & 0xffffffff)
     raw = bytearray()
-    for y in range(H):
-        raw.append(0)  # filter 0
-        for x in range(W):
-            r, g, b, a = pixels[y*W + x]
+    for y in range(h):
+        raw.append(0)
+        for x in range(w):
+            r, g, b, a = pixels[y * w + x]
             raw += bytes((r, g, b, a))
-    ihdr = struct.pack(">IIBBBBB", W, H, 8, 6, 0, 0, 0)
-    idat = zlib.compress(bytes(raw), 9)
+    ihdr = struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0)
     with open(path, "wb") as f:
         f.write(b"\x89PNG\r\n\x1a\n")
         f.write(chunk(b"IHDR", ihdr))
-        f.write(chunk(b"IDAT", idat))
+        f.write(chunk(b"IDAT", zlib.compress(bytes(raw), 9)))
         f.write(chunk(b"IEND", b""))
 
-def in_rect(x, y, rx0, ry0, rw, rh):
-    return rx0 <= x < rx0 + rw and ry0 <= y < ry0 + rh
 
-def dist_to_segment(px, py, x1, y1, x2, y2):
+class Flatten(BasePen):
+    def __init__(self, gs):
+        super().__init__(gs)
+        self.contours, self.cur = [], []
+    def _moveTo(self, p): self._flush(); self.cur = [p]
+    def _lineTo(self, p): self.cur.append(p)
+    def _curveToOne(self, p1, p2, p3):
+        p0 = self.cur[-1]
+        for i in range(1, 9):
+            t = i / 8; u = 1 - t
+            self.cur.append((u**3*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t**3*p3[0],
+                             u**3*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t**3*p3[1]))
+    def _qCurveToOne(self, p1, p2):
+        p0 = self.cur[-1]
+        for i in range(1, 9):
+            t = i / 8; u = 1 - t
+            self.cur.append((u*u*p0[0] + 2*u*t*p1[0] + t*t*p2[0],
+                             u*u*p0[1] + 2*u*t*p1[1] + t*t*p2[1]))
+    def _closePath(self): self._flush()
+    def _flush(self):
+        if len(self.cur) > 2: self.contours.append(self.cur)
+        self.cur = []
+
+
+def glyph_contours(cp):
+    f = TTFont(FONT)
+    cmap = f.getBestCmap()
+    gs = f.getGlyphSet()
+    pen = Flatten(gs)
+    gs[cmap[cp]].draw(pen)
+    pen._flush()
+    return pen.contours
+
+
+def scale_contours(contours, scale, tx, ty):
+    out = []
+    for c in contours:
+        out.append([(tx + (p[0] * scale), ty - (p[1] * scale)) for p in c])
+    return out
+
+
+def winding(px, py, contours):
+    w = 0
+    for c in contours:
+        for i in range(len(c)):
+            x1, y1 = c[i]; x2, y2 = c[(i + 1) % len(c)]
+            if y1 <= py:
+                if y2 > py and (x2 - x1) * (py - y1) - (px - x1) * (y2 - y1) > 0:
+                    w += 1
+            else:
+                if y2 <= py and (x2 - x1) * (py - y1) - (px - x1) * (y2 - y1) < 0:
+                    w -= 1
+    return w
+
+
+def in_poly(px, py, poly):
+    inside = False
+    j = len(poly) - 1
+    for i in range(len(poly)):
+        xi, yi = poly[i]; xj, yj = poly[j]
+        if ((yi > py) != (yj > py)) and (px < (xj - xi) * (py - yi) / (yj - yi) + xi):
+            inside = not inside
+        j = i
+    return inside
+
+
+def dist_seg(px, py, x1, y1, x2, y2):
     dx, dy = x2 - x1, y2 - y1
     if dx == 0 and dy == 0:
-        return ((px-x1)**2 + (py-y1)**2) ** 0.5
-    t = ((px-x1)*dx + (py-y1)*dy) / (dx*dx + dy*dy)
+        return ((px - x1) ** 2 + (py - y1) ** 2) ** 0.5
+    t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)
     t = max(0.0, min(1.0, t))
-    cx = x1 + t*dx
-    cy = y1 + t*dy
-    return ((px-cx)**2 + (py-cy)**2) ** 0.5
+    return ((px - (x1 + t * dx)) ** 2 + (py - (y1 + t * dy)) ** 2) ** 0.5
 
-def point_in_tri(px, py, ax, ay, bx, by, cx, cy):
-    def sign(p1x, p1y, p2x, p2y, p3x, p3y):
-        return (p1x - p3x)*(p2y - p3y) - (p2x - p3x)*(p1y - p3y)
-    d1 = sign(px, py, ax, ay, bx, by)
-    d2 = sign(px, py, bx, by, cx, cy)
-    d3 = sign(px, py, cx, cy, ax, ay)
-    has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
-    has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
-    return not (has_neg and has_pos)
 
-def render(bg, mark, share, outline, share_alpha=0.55, mono=False):
-    # bg: (r,g,b) or None for transparent
-    # mark: (r,g,b) for arrow + plot outline
-    # share: (r,g,b) for share half (or None to skip)
+RAW = glyph_contours(PIVOT_CP)
+xs = [p[0] for c in RAW for p in c]; ys = [p[1] for c in RAW for p in c]
+GX0, GX1 = min(xs), max(xs); GY0, GY1 = min(ys), max(ys)
+GW, GH = GX1 - GX0, GY1 - GY0
+
+
+def render(size, mode):
+    pivot_scale = (0.30 * size) / GH
+    pivot_tx = size / 2 - (GX0 + GW / 2) * pivot_scale
+    pivot_ty = size / 2 + (GY0 + GH / 2) * pivot_scale
+    pivot_contours = scale_contours(RAW, pivot_scale, pivot_tx, pivot_ty)
+
+    seam_x1, seam_y1 = 0.16 * size, 0.84 * size
+    seam_x2, seam_y2 = 0.84 * size, 0.16 * size
+    seam_half = 0.0275 * size
+    sh = [(0.293 * size, 0.707 * size), (0.334 * size, 0.693 * size), (0.307 * size, 0.666 * size)]
+    eh = [(0.707 * size, 0.293 * size), (0.666 * size, 0.307 * size), (0.693 * size, 0.334 * size)]
+
     pixels = []
-    # plot rect
-    PX0, PY0, PW, PH = 160, 160, 704, 704
-    PX1, PY1 = PX0 + PW, PY0 + PH
-    # arrow segment
-    AX1, AY1, AX2, AY2 = 300, 724, 724, 300
-    HALF_W = 30
-    # arrowheads
-    start_head = [(300,724), (342,710), (314,682)]
-    end_head   = [(724,300), (682,314), (710,342)]
-    # share triangle: (PX0,PY1)-(PX1,PY0)-(PX1,PY1)
-    for y in range(H):
-        for x in range(W):
-            if bg is None:
-                r, g, b, a = 0, 0, 0, 0
-            else:
-                r, g, b, a = bg[0], bg[1], bg[2], 255
-            # share half
-            if share is not None and point_in_tri(x, y, PX0, PY1, PX1, PY0, PX1, PY1) and in_rect(x, y, PX0, PY0, PW, PH):
-                sr, sg, sb = share
-                alpha = int(255 * share_alpha)
-                # blend
-                r = (r*(255-alpha) + sr*alpha)//255
-                g = (g*(255-alpha) + sg*alpha)//255
-                b = (b*(255-alpha) + sb*alpha)//255
-            # plot outline (stroke 28, centered on boundary)
-            if in_rect(x, y, PX0-14, PY0-14, PW+28, PH+28) and not in_rect(x, y, PX0+14, PY0+14, PW-28, PH-28):
-                r, g, b = mark
-            # arrow shaft
-            d = dist_to_segment(x+0.5, y+0.5, AX1, AY1, AX2, AY2)
-            if d <= HALF_W:
-                # check within segment bounds (with small cap)
-                t = ((x+0.5-AX1)*(AX2-AX1) + (y+0.5-AY1)*(AY2-AY1)) / ((AX2-AX1)**2 + (AY2-AY1)**2)
-                if -0.05 <= t <= 1.05:
-                    r, g, b = mark
-            # arrowheads
-            if point_in_tri(x+0.5, y+0.5, *sum(start_head, ())) or point_in_tri(x+0.5, y+0.5, *sum(end_head, ())):
-                pass
-            if point_in_tri(x+0.5, y+0.5, start_head[0][0], start_head[0][1], start_head[1][0], start_head[1][1], start_head[2][0], start_head[2][1]):
-                r, g, b = mark
-            if point_in_tri(x+0.5, y+0.5, end_head[0][0], end_head[0][1], end_head[1][0], end_head[1][1], end_head[2][0], end_head[2][1]):
-                r, g, b = mark
-            # for transparent bg, set alpha 0 outside any mark
-            if bg is None:
-                # determine if pixel is part of mark
-                is_mark = False
-                if in_rect(x, y, PX0-14, PY0-14, PW+28, PH+28) and not in_rect(x, y, PX0+14, PY0+14, PW-28, PH-28):
-                    is_mark = True
-                if d <= HALF_W:
-                    t = ((x+0.5-AX1)*(AX2-AX1) + (y+0.5-AY1)*(AY2-AY1)) / ((AX2-AX1)**2 + (AY2-AY1)**2)
-                    if -0.05 <= t <= 1.05:
-                        is_mark = True
-                if point_in_tri(x+0.5, y+0.5, start_head[0][0], start_head[0][1], start_head[1][0], start_head[1][1], start_head[2][0], start_head[2][1]):
-                    is_mark = True
-                if point_in_tri(x+0.5, y+0.5, end_head[0][0], end_head[0][1], end_head[1][0], end_head[1][1], end_head[2][0], end_head[2][1]):
-                    is_mark = True
-                if share is not None and point_in_tri(x, y, PX0, PY1, PX1, PY0, PX1, PY1) and in_rect(x, y, PX0, PY0, PW, PH):
-                    is_mark = True
-                a = 255 if is_mark else 0
-                if not is_mark:
-                    r, g, b = 0, 0, 0
+    for y in range(size):
+        for x in range(size):
+            r, g, b, a = 0, 0, 0, 0
+            if mode == "icon":
+                r, g, b, a = GREEN[0], GREEN[1], GREEN[2], 255
+            red_half = (x + y) > size
+            if mode in ("icon", "fg", "mono"):
+                if red_half:
+                    if mode == "icon":
+                        r, g, b = RED
+                    elif mode == "fg":
+                        r, g, b, a = RED[0], RED[1], RED[2], 255
+                    else:
+                        r, g, b, a = CREAM[0], CREAM[1], CREAM[2], 255
+            on_seam = dist_seg(x + 0.5, y + 0.5, seam_x1, seam_y1, seam_x2, seam_y2) <= seam_half
+            on_head = in_poly(x + 0.5, y + 0.5, sh) or in_poly(x + 0.5, y + 0.5, eh)
+            on_pivot = winding(x + 0.5, y + 0.5, pivot_contours) != 0
+            mark = on_seam or on_head or on_pivot
+
+            if mode == "icon":
+                if mark: r, g, b = CREAM
+            elif mode in ("fg", "mono"):
+                if mark: r, g, b, a = CREAM[0], CREAM[1], CREAM[2], 255
+            elif mode == "splash":
+                if mark: r, g, b, a = CREAM[0], CREAM[1], CREAM[2], 255
+                else: r, g, b, a = 0, 0, 0, 0
+
+            if mode in ("fg", "mono", "splash"):
+                if not (mark or (mode in ("fg", "mono") and red_half)):
+                    r, g, b, a = 0, 0, 0, 0
             pixels.append((r, g, b, a))
     return pixels
 
-# icon.png (opaque)
-icon = render((30,107,60), (255,255,255), (46,139,80), (255,255,255))
-write_png("/tmp/opencode/icon/icon_1024.png", icon)
 
-# android foreground (transparent, white mark)
-fg = render(None, (255,255,255), (255,255,255), (255,255,255))
-write_png("/tmp/opencode/icon/fg_1024.png", fg)
+def main():
+    out = "assets/images"
+    os.makedirs(out, exist_ok=True)
+    write_png(f"{out}/icon.png", 1024, 1024, render(1024, "icon"))
+    write_png(f"{out}/android-icon-foreground.png", 1024, 1024, render(1024, "fg"))
+    write_png(f"{out}/android-icon-background.png", 1024, 1024,
+              [(GREEN[0], GREEN[1], GREEN[2], 255)] * (1024 * 1024))
+    write_png(f"{out}/android-icon-monochrome.png", 1024, 1024, render(1024, "mono"))
+    write_png(f"{out}/splash-icon.png", 512, 512, render(512, "splash"))
+    write_png(f"{out}/icon_1024_tmp.png", 1024, 1024, render(1024, "icon"))
+    print("rendered base assets")
 
-# android background (solid green)
-bg = render((30,107,60), (30,107,60), (30,107,60), (30,107,60))
-# make bg fully opaque solid (render with bg set already does that; but mark pixels are white currently). redo: solid green.
-bg_pixels = [(30,107,60,255)] * (W*H)
-write_png("/tmp/opencode/icon/bg_1024.png", bg_pixels)
 
-# monochrome (transparent, white silhouette)
-mono = render(None, (255,255,255), (255,255,255), (255,255,255))
-# make share half solid too (already is_mark True -> alpha 255, color white). good.
-write_png("/tmp/opencode/icon/mono_1024.png", mono)
-
-# splash (512, transparent, white mark) -- render at 512 by scaling coords
-# We'll just downscale icon foreground later; for splash use white mark on transparent at 512.
-# Re-render at 512x512 quickly by scaling all coords.
-def render_scaled(size, bg, mark, share):
-    global W, H
-    W0, H0 = W, H
-    W, H = size, size
-    s = size / 1024.0
-    # scale constants
-    PX0 = int(160*s); PY0 = int(160*s); PW = int(704*s); PH = int(704*s)
-    AX1 = int(300*s); AY1 = int(724*s); AX2 = int(724*s); AY2 = int(300*s)
-    HW = max(4, int(30*s))
-    sh = [(int(300*s), int(724*s)), (int(342*s), int(710*s)), (int(314*s), int(682*s))]
-    eh = [(int(724*s), int(300*s)), (int(682*s), int(314*s)), (int(710*s), int(342*s))]
-    pixels = []
-    for y in range(H):
-        for x in range(W):
-            if bg is None:
-                r,g,b,a = 0,0,0,0
-            else:
-                r,g,b,a = bg[0],bg[1],bg[2],255
-            # share half
-            if share is not None:
-                if point_in_tri(x, y, int(PX0*s*0+PX0), int(PY1 if False else PY0+PH), PX0+PW, PY0, PX0+PW, PY0+PH) and (PX0 <= x < PX0+PW and PY0 <= y < PY0+PH):
-                    sr,sg,sb = share
-                    alpha = int(255*0.55)
-                    r = (r*(255-alpha)+sr*alpha)//255
-                    g = (g*(255-alpha)+sg*alpha)//255
-                    b = (b*(255-alpha)+sb*alpha)//255
-            # plot outline
-            outer = (PX0-14*s, PY0-14*s, PW+28*s, PH+28*s)
-            inner = (PX0+14*s, PY0+14*s, PW-28*s, PH-28*s)
-            in_outer = (outer[0] <= x < outer[0]+outer[2]) and (outer[1] <= y < outer[1]+outer[3])
-            in_inner = (inner[0] <= x < inner[0]+inner[2]) and (inner[1] <= y < inner[1]+inner[3])
-            if in_outer and not in_inner:
-                r,g,b = mark
-            # arrow shaft
-            d = dist_to_segment(x+0.5, y+0.5, AX1, AY1, AX2, AY2)
-            if d <= HW:
-                t = ((x+0.5-AX1)*(AX2-AX1)+(y+0.5-AY1)*(AY2-AY1))/((AX2-AX1)**2+(AY2-AY1)**2)
-                if -0.05 <= t <= 1.05:
-                    r,g,b = mark
-            # arrowheads
-            if point_in_tri(x+0.5,y+0.5, sh[0][0],sh[0][1],sh[1][0],sh[1][1],sh[2][0],sh[2][1]):
-                r,g,b = mark
-            if point_in_tri(x+0.5,y+0.5, eh[0][0],eh[0][1],eh[1][0],eh[1][1],eh[2][0],eh[2][1]):
-                r,g,b = mark
-            # alpha for transparent bg
-            if bg is None:
-                is_mark = False
-                if in_outer and not in_inner: is_mark = True
-                if d <= HW:
-                    t = ((x+0.5-AX1)*(AX2-AX1)+(y+0.5-AY1)*(AY2-AY1))/((AX2-AX1)**2+(AY2-AY1)**2)
-                    if -0.05 <= t <= 1.05: is_mark = True
-                if point_in_tri(x+0.5,y+0.5,sh[0][0],sh[0][1],sh[1][0],sh[1][1],sh[2][0],sh[2][1]): is_mark=True
-                if point_in_tri(x+0.5,y+0.5,eh[0][0],eh[0][1],eh[1][0],eh[1][1],eh[2][0],eh[2][1]): is_mark=True
-                if point_in_tri(x,y,PX0,PY0+PH,PX0+PW,PY0,PX0+PW,PY0+PH) and (PX0<=x<PX0+PW and PY0<=y<PY0+PH): is_mark=True
-                a = 255 if is_mark else 0
-                if not is_mark: r,g,b = 0,0,0
-            pixels.append((r,g,b,a))
-    return pixels
-
-splash = render_scaled(512, None, (255,255,255), (255,255,255))
-write_png("/tmp/opencode/icon/splash_512.png", splash) if False else None
-
-# write splash manually with W,H=512
-W,H = 512,512
-splash_pixels = render_scaled(512, None, (255,255,255), (255,255,255))
-write_png("/tmp/opencode/icon/splash_512.png", splash_pixels)
-
-W,H = 1024,1024
-print("done")
+if __name__ == "__main__":
+    main()

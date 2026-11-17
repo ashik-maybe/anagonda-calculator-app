@@ -1,5 +1,8 @@
 # আনা-গন্ডা ক্যালকুলেটর (Ana-Gonda Calculator)
 
+[![CI](https://github.com/ashik-maybe/anagonda-calculator-app/actions/workflows/ci.yml/badge.svg)](https://github.com/ashik-maybe/anagonda-calculator-app/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-006A4E.svg)](LICENSE)
+
 > ১০ আনা = কত শতাংশ? — উত্তর পকেটেই।
 
 A Bengali land calculator for Bangladesh: exact-fraction shares in the 16-আনা system,

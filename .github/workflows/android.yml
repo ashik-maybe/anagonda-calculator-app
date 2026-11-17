@@ -9,8 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  debug-apk:
-    name: Debug APK (for device QA)
+  debug-universal:
+    name: Debug APK (universal, for device QA)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +31,59 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: anagonda-debug-apk
+          name: anagonda-debug-universal
           path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 30
+
+  debug-arch:
+    name: Debug APK (${{ matrix.abi }})
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86, x86_64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Prebuild (Android)
+        run: bunx expo prebuild --platform android --no-install
+      - name: Build debug APK (${{ matrix.abi }})
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon -PreactNativeArchitectures=${{ matrix.abi }}
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: anagonda-debug-${{ matrix.abi }}
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+  release:
+    name: GitHub Release (on tag)
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: debug-universal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: anagonda-debug-universal
+          path: release-assets
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*.apk
+          body: |
+            Debug build of Ana Gonda Calculator (sideload only — not for Play Store).
+            Signed with the debug key; install via "Install unknown apps".
+            Play Store submission uses a signed AAB via EAS (follow-up).
+          draft: false
+          prerelease: true

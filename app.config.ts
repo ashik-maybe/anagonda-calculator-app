@@ -72,7 +72,7 @@ export default {
     icon: "./assets/images/icon.png",
     scheme: "anagondacalculator",
     userInterfaceStyle: "automatic",
-    backgroundColor: "#1E6B3C",
+    backgroundColor: "#006A4E",
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.anagonda.calculator",
@@ -85,7 +85,7 @@ export default {
         foregroundImage: "./assets/images/android-icon-foreground.png",
         backgroundImage: "./assets/images/android-icon-background.png",
         monochromeImage: "./assets/images/android-icon-monochrome.png",
-        backgroundColor: "#1E6B3C",
+        backgroundColor: "#006A4E",
       },
       predictiveBackGestureEnabled: true,
     },
@@ -98,9 +98,9 @@ export default {
       [
         "expo-splash-screen",
         {
-          backgroundColor: "#1E6B3C",
+          backgroundColor: "#006A4E",
           image: "./assets/images/splash-icon.png",
-          imageWidth: 76,
+          imageWidth: 128,
         },
       ],
       [
