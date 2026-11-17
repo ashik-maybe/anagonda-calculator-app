@@ -67,23 +67,52 @@ jobs:
           retention-days: 30
 
   release:
-    name: GitHub Release (on tag)
+    name: Release (arm64 + legacy arm, minified)
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     needs: debug-universal
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/setup-node@v4
         with:
-          name: anagonda-debug-universal
-          path: release-assets
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Prebuild (Android)
+        run: bunx expo prebuild --platform android --no-install
+      - name: Build release APK (arm64-v8a)
+        working-directory: android
+        run: |
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
+          cp app/build/outputs/apk/release/app-release.apk /tmp/app-arm64.apk
+      - name: Build release APK (armeabi-v7a)
+        working-directory: android
+        run: |
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=armeabi-v7a
+          cp app/build/outputs/apk/release/app-release.apk /tmp/app-arm.apk
+      - name: Build release AAB (Play Store)
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+      - name: Collect release assets
+        run: |
+          mkdir -p release-assets
+          cp /tmp/app-arm64.apk release-assets/app-arm64-v8a.apk
+          cp /tmp/app-arm.apk release-assets/app-armeabi-v7a.apk
+          find android/app/build/outputs/bundle/release -name '*.aab' -exec cp {} release-assets/ \;
+          ls -lh release-assets
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release-assets/*.apk
+          files: release-assets/*
           body: |
-            Debug build of Ana Gonda Calculator (sideload only — not for Play Store).
-            Signed with the debug key; install via "Install unknown apps".
-            Play Store submission uses a signed AAB via EAS (follow-up).
+            Release build of Ana Gonda Calculator (minified, R8 + resource shrinking).
+            - `app-release.apk` (arm64-v8a) — for modern Android phones.
+            - `app-release.apk` (armeabi-v7a) — for older 32-bit devices.
+            - `app-release.aab` — upload to Google Play Console.
+            Signed with the debug key for now; replace with a real keystore before Play submission.
           draft: false
           prerelease: true

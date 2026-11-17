@@ -94,6 +94,15 @@ export default {
       favicon: "./assets/images/favicon.png",
     },
     plugins: [
+      [
+        "expo-build-properties",
+        {
+          android: {
+            enableMinifyInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true,
+          },
+        },
+      ],
       "expo-router",
       [
         "expo-splash-screen",
