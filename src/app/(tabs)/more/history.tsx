@@ -32,7 +32,9 @@ export default function HistoryScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      setRows(listHistory());
+      const all = listHistory();
+      const pending = pendingRef.current;
+      setRows(pending ? all.filter((entry) => entry.id !== pending.id) : all);
     }, []),
   );
 
@@ -276,20 +278,18 @@ export default function HistoryScreen() {
               />
             );
           }}
-          ListFooterComponent={
-            rows.length > 0 ? (
-              <View style={{ marginTop: spacing[2] }}>
-                <TonalButton
-                  label={armed ? t("history_clear_confirm") : t("history_clear")}
-                  variant="destructive"
-                  onPress={onClear}
-                />
-              </View>
-            ) : undefined
-          }
+          ListFooterComponent={<View style={{ height: spacing[5] }} />}
           contentContainerStyle={{ paddingBottom: spacing[4] }}
         />
       )}
+
+      {rows.length > 0 ? (
+        <TonalButton
+          label={armed ? t("history_clear_confirm") : t("history_clear")}
+          variant="destructive"
+          onPress={onClear}
+        />
+      ) : null}
 
       {pendingDelete !== null ? (
         <View
