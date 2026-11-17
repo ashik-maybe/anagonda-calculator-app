@@ -70,7 +70,6 @@ jobs:
     name: Release (arm64 + legacy arm, minified)
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-    needs: debug-universal
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
