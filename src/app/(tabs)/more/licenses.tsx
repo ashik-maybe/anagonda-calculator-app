@@ -8,6 +8,11 @@ type LicenseEntry = {
   readonly license: string;
 };
 
+const APP_LICENSE: LicenseEntry = {
+  name: "Ana Gonda Calculator",
+  license: "GPL-3.0-or-later",
+};
+
 const FONT_ENTRIES: readonly LicenseEntry[] = [
   { name: "Noto Sans Bengali", license: "SIL Open Font License 1.1" },
   { name: "Noto Sans", license: "SIL Open Font License 1.1" },
@@ -29,6 +34,15 @@ export default function LicensesScreen() {
       contentContainerStyle={styles.container}
     >
       <Text style={[styles.header, { color: colors.onSurface }]}>{t("licenses")}</Text>
+
+      <View style={[styles.card, { backgroundColor: colors.surfaceVariant }]}>
+        <View style={styles.entryRow}>
+          <Text style={[styles.name, { color: colors.onSurface }]}>{APP_LICENSE.name}</Text>
+          <Text style={[styles.license, { color: colors.onSurfaceVariant }]}>
+            {APP_LICENSE.license}
+          </Text>
+        </View>
+      </View>
 
       <View style={[styles.card, { backgroundColor: colors.surfaceVariant }]}>
         {FONT_ENTRIES.map((entry) => (

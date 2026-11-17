@@ -1,7 +1,7 @@
 # আনা-গন্ডা ক্যালকুলেটর (Ana-Gonda Calculator)
 
 [![CI](https://github.com/ashik-maybe/anagonda-calculator-app/actions/workflows/ci.yml/badge.svg)](https://github.com/ashik-maybe/anagonda-calculator-app/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-006A4E.svg)](LICENSE)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-006A4E.svg)](LICENSE)
 
 > ১০ আনা = কত শতাংশ? — উত্তর পকেটেই।
 
@@ -61,6 +61,10 @@ Source: https://github.com/ashik-maybe/anagonda-app-privacy
 
 ## License
 
-App code: MIT. Fonts: SIL Open Font License 1.1 (full text embedded in-app under
-আরও → লাইসেন্স, verbatim in `src/data/ofl.ts`). Third-party licenses are listed on the
-same screen; only actually-bundled dependencies are named.
+App code: **GPL-3.0-or-later**. Fonts: SIL Open Font License 1.1 (full text embedded
+in-app under আরও → লাইসেন্স, verbatim in `src/data/ofl.ts`). Third-party licenses are
+listed on the same screen; only actually-bundled dependencies are named.
+
+Versions published before v1.0.0 were MIT; from v1.0.0 onward the app is
+GPL-3.0-or-later. The corresponding source for every published binary is available
+at its release tag.

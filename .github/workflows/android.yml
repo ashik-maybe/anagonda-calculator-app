@@ -96,22 +96,30 @@ jobs:
       - name: Build release AAB (Play Store)
         working-directory: android
         run: ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
-      - name: Collect release assets
+      - name: Collect release APKs
         run: |
           mkdir -p release-assets
           cp /tmp/app-arm64.apk release-assets/app-arm64-v8a.apk
           cp /tmp/app-arm.apk release-assets/app-armeabi-v7a.apk
-          find android/app/build/outputs/bundle/release -name '*.aab' -exec cp {} release-assets/ \;
           ls -lh release-assets
+      - name: Upload AAB (Play Console, not in release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: anagonda-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          retention-days: 30
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release-assets/*
+          files: release-assets/*.apk
           body: |
             Release build of Ana Gonda Calculator (minified, R8 + resource shrinking).
-            - `app-release.apk` (arm64-v8a) — for modern Android phones.
-            - `app-release.apk` (armeabi-v7a) — for older 32-bit devices.
-            - `app-release.aab` — upload to Google Play Console.
-            Signed with the debug key for now; replace with a real keystore before Play submission.
+            - `app-arm64-v8a.apk` — for modern Android phones.
+            - `app-armeabi-v7a.apk` — for older 32-bit devices.
+
+            Source code for these binaries: https://github.com/ashik-maybe/anagonda-calculator-app/tree/${{ github.ref_name }}
+            Licensed GPL-3.0-or-later. Signed with the debug key for now; a real
+            keystore is needed before Play Store submission. The Play AAB is built
+            as a workflow artifact and is not attached here.
           draft: false
           prerelease: true
