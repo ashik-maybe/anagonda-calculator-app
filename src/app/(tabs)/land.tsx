@@ -219,6 +219,15 @@ export default function LandScreen() {
     hapticTick();
   };
 
+  const restorePlot = (plot: Plot, index: number) => {
+    setPlots((prev) => {
+      const next = [...prev];
+      const idx = Math.min(index, next.length);
+      next.splice(idx, 0, plot);
+      return next;
+    });
+  };
+
   const clearPlots = () => {
     setPlots([]);
     hapticTick();
@@ -479,6 +488,7 @@ export default function LandScreen() {
             onClear={clearPlots}
             total={total}
             locale={locale}
+            onRestorePlot={restorePlot}
           />
         )}
 

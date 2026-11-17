@@ -26,8 +26,14 @@ export function Stepper({ label, value, onChange, error, hint }: StepperProps) {
   return (
     <View style={styles.container}>
       <View style={styles.labelRow}>
-        <Text style={styles.label}>{label}</Text>
-        {hint ? <Text style={styles.hint}>{hint}</Text> : null}
+        <Text maxFontSizeMultiplier={2} style={styles.label}>
+          {label}
+        </Text>
+        {hint ? (
+          <Text maxFontSizeMultiplier={2} style={styles.hint}>
+            {hint}
+          </Text>
+        ) : null}
       </View>
       <View style={styles.row}>
         <Pressable
@@ -45,6 +51,7 @@ export function Stepper({ label, value, onChange, error, hint }: StepperProps) {
         <TextInput
           accessibilityLabel={label}
           keyboardType="number-pad"
+          maxFontSizeMultiplier={2}
           onChangeText={onChange}
           selectTextOnFocus
           style={styles.input}

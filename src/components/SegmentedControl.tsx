@@ -43,7 +43,11 @@ export function SegmentedControl({
               !selected && pressed && { backgroundColor: colors.surfaceVariant },
             ]}
           >
-            <Text numberOfLines={1} style={[styles.label, selected ? styles.labelSelected : null]}>
+            <Text
+              numberOfLines={1}
+              maxFontSizeMultiplier={2}
+              style={[styles.label, selected ? styles.labelSelected : null]}
+            >
               {segment.label}
             </Text>
           </Pressable>

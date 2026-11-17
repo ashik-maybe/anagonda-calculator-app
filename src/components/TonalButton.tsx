@@ -61,7 +61,9 @@ export function TonalButton({
           transform: [{ scale: pressScale }],
         }}
       >
-        <Text style={styles.label}>{label}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.label}>
+          {label}
+        </Text>
       </Animated.View>
     </Pressable>
   );

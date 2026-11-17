@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, View } from "react-native";
-import { Trash2 } from "lucide-react-native";
+import { Pressable, Share, View } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import { Check, Copy, Share2, Trash2 } from "lucide-react-native";
 import { radius, spacing, typography, useThemeColors } from "../constants/theme";
 import { t, type Locale } from "../lib/i18n";
 import { formatLand } from "../lib/deed";
 import type { Fraction } from "../lib/fraction";
 import { plotLabel, type Plot } from "../lib/worksheet";
 import { SHAPE_ORDER } from "../lib/shapes";
-import { hapticSuccess, hapticWarning } from "../lib/haptics";
+import { hapticSuccess, hapticTick, hapticWarning } from "../lib/haptics";
 import { ShapeGlyph } from "./ShapeGlyphs";
 import { BnText } from "./BnText";
 import { EmptyState } from "./EmptyState";
@@ -19,17 +20,24 @@ type Props = {
   readonly onClear: () => void;
   readonly total: Fraction;
   readonly locale: Locale;
+  readonly onRestorePlot?: (plot: Plot, index: number) => void;
 };
 
 /** Worksheet ("খাতা") view: saved plots, running total, and a two-tap clear. */
-export function Worksheet({ plots, onRemove, onClear, total, locale }: Props) {
+export function Worksheet({ plots, onRemove, onClear, total, locale, onRestorePlot }: Props) {
   const { colors } = useThemeColors();
   const [armed, setArmed] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [pendingRemoval, setPendingRemoval] = useState<{ plot: Plot; index: number } | null>(null);
   const armTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(
     () => () => {
       if (armTimer.current !== undefined) clearTimeout(armTimer.current);
+      if (undoTimer.current !== undefined) clearTimeout(undoTimer.current);
+      if (copyTimer.current !== undefined) clearTimeout(copyTimer.current);
     },
     [],
   );
@@ -47,13 +55,107 @@ export function Worksheet({ plots, onRemove, onClear, total, locale }: Props) {
     hapticSuccess();
   };
 
+  const summary = (): string =>
+    `${t("worksheet_title")}\n` +
+    plots
+      .map((p) => `${plotLabel(p, locale)}: ${formatLand(p.areaSqft, 2, locale)} ${t("unit_sqft")}`)
+      .join("\n") +
+    `\n${t("worksheet_total")}: ${formatLand(total, 2, locale)} ${t("unit_sqft")}`;
+
+  const handleCopy = () => {
+    void Clipboard.setStringAsync(summary()).then(() => {
+      hapticSuccess();
+      setCopied(true);
+      if (copyTimer.current !== undefined) clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const handleShare = () => {
+    hapticTick();
+    Share.share({ message: summary() }).catch(() => {
+      // user cancelled share sheet; nothing to do
+    });
+  };
+
+  const handleRemove = (plot: Plot, index: number) => {
+    if (undoTimer.current !== undefined) clearTimeout(undoTimer.current);
+    setPendingRemoval({ plot, index });
+    undoTimer.current = setTimeout(() => setPendingRemoval(null), 5000);
+    onRemove(plot.id);
+  };
+
+  const handleRestore = () => {
+    if (pendingRemoval === null) return;
+    if (undoTimer.current !== undefined) clearTimeout(undoTimer.current);
+    undoTimer.current = undefined;
+    onRestorePlot?.(pendingRemoval.plot, pendingRemoval.index);
+    setPendingRemoval(null);
+    hapticTick();
+  };
+
+  const snackbar =
+    pendingRemoval !== null ? (
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing[2],
+          backgroundColor: colors.surface,
+          borderColor: colors.outlineVariant,
+          borderWidth: 1,
+          borderRadius: radius.md,
+          padding: spacing[3],
+        }}
+      >
+        <BnText
+          variant="body"
+          style={{
+            flex: 1,
+            color: colors.onSurface,
+            fontFamily: typography.fonts.bengali,
+          }}
+        >
+          {t("plot_removed")}
+        </BnText>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("undo")}
+          onPress={handleRestore}
+          style={({ pressed }) => ({
+            minHeight: 36,
+            paddingHorizontal: spacing[3],
+            borderRadius: radius.md,
+            backgroundColor: colors.primaryContainer,
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <BnText
+            variant="caption"
+            style={{
+              color: colors.onPrimaryContainer,
+              fontWeight: "600",
+              fontFamily: typography.fonts.bengali,
+            }}
+          >
+            {t("undo")}
+          </BnText>
+        </Pressable>
+      </View>
+    ) : null;
+
   if (plots.length === 0) {
     return (
-      <EmptyState
-        icon={<ShapeGlyph shape={SHAPE_ORDER[0]} size={28} color={colors.onSurfaceVariant} />}
-        title={t("worksheet_title")}
-        hint={t("porimap_empty_hint")}
-      />
+      <View style={{ gap: spacing[2] }}>
+        <EmptyState
+          icon={<ShapeGlyph shape={SHAPE_ORDER[0]} size={28} color={colors.onSurfaceVariant} />}
+          title={t("worksheet_title")}
+          hint={t("porimap_empty_hint")}
+        />
+        {snackbar}
+      </View>
     );
   }
 
@@ -118,7 +220,7 @@ export function Worksheet({ plots, onRemove, onClear, total, locale }: Props) {
               accessibilityRole="button"
               accessibilityLabel={`${t("worksheet_remove")}: ${plotLabel(plot, locale)}`}
               hitSlop={8}
-              onPress={() => onRemove(plot.id)}
+              onPress={() => handleRemove(plot, index)}
               style={{
                 width: 44,
                 height: 44,
@@ -160,6 +262,74 @@ export function Worksheet({ plots, onRemove, onClear, total, locale }: Props) {
       </View>
 
       <AreaCard heading={t("worksheet_total")} areaSqft={total} />
+
+      <View style={{ flexDirection: "row", gap: spacing[2], justifyContent: "flex-end" }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={copied ? t("copied") : t("copy")}
+          onPress={handleCopy}
+          style={({ pressed }) => ({
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing[1],
+            minHeight: 44,
+            paddingHorizontal: spacing[3],
+            borderRadius: radius.md,
+            borderWidth: 1,
+            borderColor: colors.outlineVariant,
+            backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
+            justifyContent: "center",
+          })}
+        >
+          {copied ? (
+            <Check size={18} color={colors.success} />
+          ) : (
+            <Copy size={18} color={colors.onSurfaceVariant} />
+          )}
+          <BnText
+            variant="caption"
+            style={{
+              color: copied ? colors.success : colors.onSurfaceVariant,
+              fontWeight: "600",
+              fontFamily: typography.fonts.bengali,
+            }}
+          >
+            {copied ? t("copied") : t("copy")}
+          </BnText>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("share")}
+          onPress={handleShare}
+          style={({ pressed }) => ({
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing[1],
+            minHeight: 44,
+            paddingHorizontal: spacing[3],
+            borderRadius: radius.md,
+            borderWidth: 1,
+            borderColor: colors.outlineVariant,
+            backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
+            justifyContent: "center",
+          })}
+        >
+          <Share2 size={18} color={colors.onSurfaceVariant} />
+          <BnText
+            variant="caption"
+            style={{
+              color: colors.onSurfaceVariant,
+              fontWeight: "600",
+              fontFamily: typography.fonts.bengali,
+            }}
+          >
+            {t("share")}
+          </BnText>
+        </Pressable>
+      </View>
+
+      {snackbar}
     </View>
   );
 }
