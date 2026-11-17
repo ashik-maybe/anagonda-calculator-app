@@ -1,0 +1,10 @@
+Ana Gonda Calculator
+Copyright (c) 2026 Md. Ashik
+SPDX-License-Identifier: GPL-3.0-or-later
+
+The full license text is in LICENSE (GNU GPL version 3, or any later version).
+
+Versions published before v1.0.0 were MIT. From v1.0.0 onward the app is
+GPL-3.0-or-later. The corresponding source for every published binary is
+available at its release tag:
+https://github.com/ashik-maybe/anagonda-calculator-app/releases
