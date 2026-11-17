@@ -77,7 +77,6 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.anagonda.calculator",
       buildNumber: "1",
-      icon: "./assets/expo.icon",
     },
     android: {
       package: "com.anagonda.calculator",
